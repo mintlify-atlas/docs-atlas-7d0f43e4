@@ -1,0 +1,228 @@
+---
+title: "Configure CIPP alerts and notification delivery"
+description: "Set up CIPP alerts for security events, MFA gaps, license issues, and more. Deliver notifications via email, webhook, or PSA ticket with snooze support."
+---
+
+CIPP includes a flexible alerting engine that monitors your managed tenants for security events, configuration drift, and operational issues — then delivers notifications through the channels your team already uses. You can trigger alerts from Microsoft audit logs (such as new admin role assignments or mailbox permission changes) or from CIPP's own scripted checks (such as users without MFA or expiring licenses). Alerts are configured once and run continuously across whichever tenants you choose.
+
+Navigate to **Tenant > Administration > Alert Configuration** to manage your alert rules, or view snoozed alerts under the **Snoozed Alerts** tab.
+
+## Alert types
+
+CIPP supports two complementary alert mechanisms. Most deployments use a combination of both.
+
+<Tabs>
+  <Tab title="Audit log alerts">
+    Audit log alerts watch the Microsoft 365 audit log stream in real time and fire when a log entry matches conditions you define. This is the right choice for event-driven notifications — things that happen at a specific moment, like a new admin being added or a mailbox rule being created.
+
+    **Log sources:**
+    - **Azure AD** — sign-in events, role changes, user and group modifications, app consent
+    - **Exchange** — mailbox permission changes, transport rule modifications, forwarding rule creation
+
+    **Condition operators:**
+    - Equals to / Not equals to
+    - Like / Not like / Does not match
+    - Greater than / Less than
+    - In / Not In (multi-value matching)
+
+    **Built-in presets** are available for common scenarios so you do not have to build conditions from scratch. Select a preset from the dropdown and the conditions populate automatically. You can then customize them further.
+  </Tab>
+  <Tab title="Scripted CIPP alerts">
+    Scripted alerts run on a schedule and evaluate tenant state using CIPP's own data collection. Use these for threshold-based or polling checks — things that don't produce a discrete audit log event, like a user who has gone X days without logging in or a license approaching expiry.
+
+    Each scripted alert has a **recommended run interval** built into the platform. The interface highlights the recommended option when you select a command so you can follow best-practice cadences without guessing.
+
+    Scripted alerts support targeting **all tenants**, specific tenants, or **tenant groups** — and you can exclude specific tenants from an all-tenants rule.
+  </Tab>
+</Tabs>
+
+## Available scripted alert checks
+
+<AccordionGroup>
+  <Accordion title="Identity and access">
+    | Alert | Recommended interval |
+    |---|---|
+    | Alert on users without any form of MFA | Daily |
+    | Alert on admins without any form of MFA | Daily |
+    | Alert when users register new MFA devices | Hourly |
+    | Alert on new risky users (P2 license required) | Every 30 minutes |
+    | Alert on Global Admin accounts without alternate email | Weekly |
+    | Alert on Global Admins outside approved list | Every 4 hours |
+    | Alert on licensed users with any administrator roles | Weekly |
+    | Alert on groups or nested groups assigned to a role (privilege escalation risk) | Daily |
+    | Alert on tenants without a Conditional Access policy | Daily |
+    | Alert on tenants with Conditional Access policies in report-only mode | Daily |
+    | Alert when Security Defaults is disabled with no Conditional Access policies | Daily |
+    | Alert on Security Defaults automatic enablement | Daily |
+  </Accordion>
+
+  <Accordion title="Defender and security">
+    | Alert | Recommended interval |
+    |---|---|
+    | Alert if Defender is not running (requires Lighthouse onboarding) | Every 4 hours |
+    | Alert on Defender malware found (requires Lighthouse onboarding) | Every 4 hours |
+    | Alert on new Defender incidents (filterable by severity) | Every 4 hours |
+    | Alert on new Defender alerts (filterable by severity) | Every 4 hours |
+    | Alert on software vulnerabilities (CVSS and exploitability filters) | Every 4 hours |
+    | Alert on device compliance issues | Every 4 hours |
+    | Alert on a low Secure Score (percent, absolute, or score drop) | Daily |
+    | Alert on (new) potentially breached passwords | Weekly |
+    | Alert on Huntress Rogue Apps detected | Every 4 hours |
+    | Alert on new Check phishing extension detections | Every 15 minutes |
+  </Accordion>
+
+  <Accordion title="Email and collaboration">
+    | Alert | Recommended interval |
+    |---|---|
+    | Alert on SMTP AUTH usage with success (helps phase out SMTP AUTH, Entra P1 required) | Daily |
+    | Alert on users restricted from sending email | Every 30 minutes |
+    | Alert when Tenant External Recipient Rate Limit exceeds threshold | Hourly |
+    | Alert on quarantine release requests | Hourly |
+    | Alert on MX record changes | Daily |
+    | Alert on soft deleted mailboxes | Daily |
+  </Accordion>
+
+  <Accordion title="Licenses and resources">
+    | Alert | Recommended interval |
+    |---|---|
+    | Alert on license assignment errors | Daily |
+    | Alert on licenses expiring in X days | Weekly |
+    | Alert on unused licenses | Daily |
+    | Alert on overused licenses | Weekly |
+    | Alert on Entra ID P1/P2 license over-utilization | Weekly |
+    | Alert on % mailbox quota used | Every 4 hours |
+    | Alert on % SharePoint quota used | Every 4 hours |
+    | Alert on % OneDrive quota used | Every 4 hours |
+  </Accordion>
+
+  <Accordion title="Devices and applications">
+    | Alert | Recommended interval |
+    |---|---|
+    | Alert on Intune policy or app conflicts/errors | Every 4 hours |
+    | Alert on stale Entra devices not active for X days | Daily |
+    | Alert on expiring application secrets | Daily |
+    | Alert on expiring application certificates | Daily |
+    | Alert on long-lived app registration secrets or certificates | Daily |
+    | Alert on expiring APN certificates | Daily |
+    | Alert on expiring VPP tokens | Daily |
+    | Alert on expiring DEP tokens | Daily |
+    | Alert on new Apple Business Manager terms | Monthly |
+    | Alert on new apps in the application approval list | Every 30 minutes |
+  </Accordion>
+
+  <Accordion title="Tenant health and compliance">
+    | Alert | Recommended interval |
+    |---|---|
+    | Alert on tenant accessibility issues (Graph, Exchange, GDAP roles) | Daily |
+    | Alert on low tenant alignment percentage | Daily |
+    | Alert on licensed users not logged in for X days | Daily |
+    | Alert on guest users not logged in for X days | Daily |
+    | Alert on inactive users (all users) | Daily |
+    | Alert on Entra Connect sync not run in last X hours | Daily |
+    | Alert on domains with low security score | Weekly |
+    | Alert on changed admin passwords | Every 30 minutes |
+    | Alert on group membership changes for monitored groups | Hourly |
+    | Alert on admin Password changes | Every 30 minutes |
+  </Accordion>
+</AccordionGroup>
+
+## Creating an alert
+
+<Steps>
+  <Step title="Open the alert wizard">
+    Go to **Tenant > Administration > Alert Configuration** and click **Add Alert**. Choose between **Audit Log Alert** and **Scripted CIPP Alert** to select your alert type.
+  </Step>
+  <Step title="Select tenants">
+    Choose which tenants the alert applies to. You can select individual tenants, tenant groups, or **All Tenants**. When **All Tenants** is selected, an additional field appears to exclude specific tenants from the rule.
+  </Step>
+  <Step title="Define the alert criteria">
+    **For audit log alerts:** Select the log source (Azure AD or Exchange), optionally load a preset, then add one or more conditions. Each condition is a property, an operator, and a value. Multiple conditions are evaluated together — all must match for the alert to fire.
+
+    **For scripted alerts:** Select the command to run and set the recurrence interval. Some commands require additional inputs such as a day threshold or severity filter — these appear dynamically based on your selection. Optionally set a specific start date/time for the first run.
+  </Step>
+  <Step title="Configure notification settings">
+    Select one or more **actions** to take when the alert fires:
+
+    - **Email** — sends a notification to the email address configured in CIPP notification settings
+    - **Webhook** — posts the alert payload to your configured webhook endpoint
+    - **PSA** — creates a ticket in your connected PSA integration
+
+    Optionally provide a **Custom Subject** to prefix the notification subject line (the tenant domain is automatically prepended). Add an **Alert Comment** to embed runbook instructions or FAQ links directly in the alert record — these appear alongside the alert in the CIPP interface for the engineer handling it.
+  </Step>
+  <Step title="Save the alert">
+    Click **Save Alert**. The alert is queued and begins running on its configured schedule. You can return to the alert list to edit, clone, or delete it at any time.
+  </Step>
+</Steps>
+
+<Tip>
+Use **Clone & Edit Alert** on an existing rule when you want a similar alert with a slightly different threshold or tenant scope. This avoids rebuilding conditions from scratch.
+</Tip>
+
+## Notification delivery
+
+CIPP can route alert notifications to three destinations. Configure the underlying delivery endpoints in **Settings > Notifications & SIEM**.
+
+| Destination | Use case |
+|---|---|
+| Email | Inbox-based triage; useful for lower-priority or daily digest-style alerts |
+| Webhook | Integrates with Teams, Slack, Opsgenie, PagerDuty, or any HTTP-based system |
+| PSA | Creates tickets automatically in your Professional Services Automation tool |
+
+You can select multiple destinations per alert. For example, a high-severity Defender incident alert might send to both a Teams webhook and your PSA simultaneously.
+
+<Note>
+The PSA integration must be configured before PSA delivery is available. See [Settings > Integrations](/settings/integrations) for supported PSA platforms and setup instructions.
+</Note>
+
+## Snoozing alerts
+
+When an alert fires for a known condition that does not require immediate action — such as a planned maintenance window or an acknowledged risk — you can snooze it to suppress repeat notifications.
+
+Snooze durations available from alert notification emails or the CIPP snooze page:
+
+- 7 days
+- 14 days
+- 30 days
+- 90 days
+- Forever (indefinite suppression)
+
+To view and manage all active snoozes, go to **Tenant > Administration > Alert Configuration > Snoozed Alerts**. The table shows the alert command name, affected tenant, a content preview, who snoozed it, the current status, and how many days remain.
+
+To remove a snooze before it expires, click **Remove Snooze** on the row. The alert will fire again on the next scheduled run.
+
+<Warning>
+Snoozing an alert forever suppresses it indefinitely. Review the Snoozed Alerts list periodically to ensure no critical checks have been silenced unintentionally.
+</Warning>
+
+## Best practices for alert tuning
+
+**Start with a subset of tenants.** When creating a new alert rule, target one or two representative tenants first. Confirm the alert fires correctly and with an acceptable volume before rolling out to all tenants.
+
+**Use the recommended run interval.** CIPP's recommended intervals are based on how frequently the underlying data changes. Running an alert too frequently wastes resources; running it too infrequently increases detection lag. The recommended interval is highlighted automatically in the UI.
+
+**Add alert comments.** The Alert Comment field is displayed to whoever receives or investigates the alert. Use it to link to your internal runbook, explain what the alert means, and describe the expected remediation steps. This significantly reduces time-to-resolution for less-experienced team members.
+
+**Use audit log presets for common scenarios.** CIPP ships with audit log alert presets covering the most common security events. Load a preset and modify it rather than building conditions from scratch — this reduces configuration errors.
+
+**Consolidate overlapping alerts.** If you have multiple scripted alerts covering the same category (for example, several license-related alerts), consider whether a single broader check or a daily digest would reduce alert fatigue compared to multiple individual rules running throughout the day.
+
+**Review snoozed alerts regularly.** Establish a recurring task to audit the Snoozed Alerts list. Snoozes that were appropriate during an incident may have expired their usefulness and should be removed so the underlying check resumes.
+
+---
+
+## Related pages
+
+<CardGroup cols={2}>
+  <Card title="Security overview" icon="shield-check" href="/security/overview">
+    Secure Score, risky users, Safe Links, and security reports.
+  </Card>
+  <Card title="Defender and incidents" icon="shield" href="/security/defender-incidents">
+    Manage Defender incidents, alerts, and endpoint policies.
+  </Card>
+  <Card title="Notifications and SIEM" icon="satellite-dish" href="/settings/notifications-siem">
+    Configure email, webhook, and SIEM delivery endpoints.
+  </Card>
+  <Card title="Integrations" icon="plug" href="/settings/integrations">
+    Set up PSA and other third-party integrations.
+  </Card>
+</CardGroup>

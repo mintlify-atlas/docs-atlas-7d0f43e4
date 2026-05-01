@@ -1,0 +1,139 @@
+---
+title: "Exchange Online Mailbox Management for MSPs – CIPP"
+description: "List, audit, and manage Exchange Online mailboxes across all tenants in CIPP: inbox rules, quarantine, restricted users, and retention policies."
+---
+
+The **Email & Collaboration** section of CIPP gives you full control over Exchange Online mailboxes across every tenant you manage — without switching between admin portals. From a single view you can browse all mailbox types, inspect permissions, manage inbox rules, review quarantined messages, recover deleted mailboxes, and enforce retention policies at scale.
+
+## Mailbox management features
+
+<CardGroup cols={2}>
+  <Card title="Mailboxes" icon="inbox" href="/email/mailboxes">
+    List all user, shared, room, and equipment mailboxes across tenants. Filter by mailbox type, view primary and secondary SMTP addresses, and take actions from an inline side panel. You can create shared mailboxes and High-Value Entity (HVE) mailboxes directly from this page.
+  </Card>
+  <Card title="Mailbox rules" icon="filter" href="/email/mailboxes">
+    View every inbox rule across all mailboxes in a tenant. Rules that forward or redirect mail externally are a common indicator of compromise — identify and remove suspicious rules without leaving CIPP.
+  </Card>
+  <Card title="Restricted users" icon="ban" href="/email/mailboxes">
+    See which accounts Microsoft has blocked from sending outbound email due to spam threshold violations. Unblock users after you have secured the account; CIPP warns you to check for compromise before proceeding.
+  </Card>
+  <Card title="Quarantine management" icon="shield" href="/email/mailboxes">
+    Review quarantined messages, preview email content, trace delivery, release messages to recipients, or deny pending release requests — all without needing access to the Microsoft Defender portal.
+  </Card>
+  <Card title="Deleted mailboxes" icon="trash" href="/email/mailboxes">
+    Browse soft-deleted mailboxes still within the Exchange retention window. Identify mailboxes eligible for recovery before they are permanently purged.
+  </Card>
+  <Card title="Exchange retention" icon="clock" href="/email/mailboxes">
+    Manage Exchange retention policies and retention tags per tenant. Create policies, assign tags, and edit or delete existing policies to meet your compliance requirements.
+  </Card>
+</CardGroup>
+
+## Mailboxes
+
+The mailbox list is the starting point for most mailbox administration tasks. It calls `/api/ListMailboxes` and supports all tenants simultaneously when you select **All Tenants** in the tenant picker. You can filter by mailbox type — user mailboxes, shared mailboxes, room mailboxes, or equipment mailboxes — and export or search across the full list.
+
+Each row expands into a side panel showing the display name, UPN, recipient type details, and all additional email addresses. Actions available from the side panel include:
+
+- Setting mailbox permissions (full access, send as, send on behalf)
+- Converting between user and shared mailbox
+- Managing forwarding settings
+- Setting the out-of-office message
+- Enabling or disabling litigation hold
+
+<Tip>
+  Use the **Sync Mailboxes** button to refresh the cached mailbox list. By default, CIPP caches results to reduce API call volume against Microsoft Graph.
+</Tip>
+
+### Adding a shared mailbox
+
+You can create a new shared mailbox inline from the Mailboxes page using the **Add Shared Mailbox** drawer. Provide a display name, username, and select the domain. The mailbox is provisioned immediately via `/api/AddSharedMailbox`.
+
+<Note>
+  Shared mailbox creation runs against the currently selected tenant. Switch tenants before creating if you need to provision into a specific customer environment.
+</Note>
+
+## Mailbox rules (inbox rules)
+
+Navigate to **Email > Administration > Mailbox Rules** to view all inbox rules across the tenant. Each rule shows the user principal name, rule name, priority, enabled state, and any configured conditions such as specific senders.
+
+Available actions per rule:
+
+| Action | Description |
+|---|---|
+| Enable | Re-enables a previously disabled inbox rule |
+| Disable | Disables the rule without deleting it |
+| Remove | Permanently deletes the rule from the mailbox |
+
+<Warning>
+  Inbox rules that forward mail to external addresses are a common sign of account compromise. Review these rules regularly as part of your security monitoring. Use the **Identity > Reports** section alongside mailbox rule audits for a full picture.
+</Warning>
+
+## Restricted users
+
+Navigate to **Email > Administration > Restricted Users** to see accounts that Microsoft has blocked from sending outbound email. This page calls `/api/ListRestrictedUsers` and is scoped to the currently selected tenant (all-tenants view is not supported).
+
+The table shows the sender address, block type, creation and change timestamps, temporary block status, and the count of internal and external messages that triggered the block.
+
+Before unblocking a user, verify that you have:
+
+- Reviewed sign-in logs for suspicious activity
+- Checked inbox rules and forwarding settings
+- Investigated unusual sent items via message trace
+- Reset the account password if compromised
+- Enabled MFA if it was not already active
+
+Click **Unblock User** to remove the restriction. Microsoft can take up to one hour to propagate the change.
+
+<Warning>
+  A restricted user almost always indicates a compromised account. Do not unblock without first securing the account — re-blocking happens automatically if the account continues sending spam.
+</Warning>
+
+## Quarantine management
+
+Navigate to **Email > Administration > Quarantine Management** to review messages held in Exchange Online Protection quarantine. The table shows received time, release status, subject, sender, recipient, message type, and the policy that quarantined the message.
+
+Filter options:
+
+- **Not Released** — messages awaiting a decision
+- **Requested** — end-user release requests pending admin approval
+- **Released** — messages already delivered to the recipient
+
+Actions per message:
+
+| Action | Description |
+|---|---|
+| View message | Preview the full message content inline |
+| View message trace | Open delivery tracking details for the message |
+| Release | Deliver the message to the recipient |
+| Deny | Reject a pending end-user release request |
+| Release & allow sender | Release and add the sender to the tenant safe-senders list |
+
+<Note>
+  Quarantine is tenant-scoped. Select the specific tenant you want to review before opening this page.
+</Note>
+
+## Deleted mailboxes
+
+Navigate to **Email > Administration > Deleted Mailboxes** to see soft-deleted mailboxes that are still within the Exchange Online retention window. The page shows the display name, mail address, company name, and on-premises sync status.
+
+Exchange Online retains soft-deleted mailboxes for 30 days by default (or longer if a hold is applied). To restore a mailbox, use the Microsoft 365 admin center or PowerShell — CIPP surfaces the list so you can identify recovery candidates quickly.
+
+## Exchange retention
+
+Navigate to **Email > Administration > Exchange Retention** to manage retention policies and tags for the selected tenant. The section is divided into two tabs: **Policies** and **Tags**.
+
+### Retention policies
+
+The Policies tab shows every Exchange retention policy, including whether it is the default policy and which retention tags are linked to it. You can:
+
+- **Add a retention policy** using the **Add Retention Policy** button
+- **Edit a policy** to adjust its name or linked tags
+- **Delete a policy** — note that deletion is irreversible, even if the policy is currently applied to mailboxes
+
+### Retention tags
+
+The Tags tab shows individual retention tags that can be assigned to policies. Tags define the retention action (move to archive, delete, etc.) and the retention age in days.
+
+<Warning>
+  Deleting a retention policy that is still applied to mailboxes will remove the policy assignment. Affected mailboxes will fall back to the default retention policy. Confirm the policy is not actively needed before deleting.
+</Warning>

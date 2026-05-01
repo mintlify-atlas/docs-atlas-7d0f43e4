@@ -1,0 +1,100 @@
+---
+title: "Contributing to CIPP: issues, PRs, and the CLA"
+description: "Learn how to contribute code, report bugs, and submit pull requests to the CIPP project, including CLA requirements and the AGPL-3.0 license."
+---
+
+CIPP is an open-source project maintained by [CyberDrain](https://cyberdrain.com) and a community of contributors. Whether you are fixing a bug, proposing a feature, or improving documentation, contributions are welcome — but there are a few rules you need to understand before you open your first pull request.
+
+## Contributor License Agreement
+
+By submitting any contribution to this repository — a commit, pull request, issue, or code review — you automatically agree to the project's Contributor License Agreement (CLA). There is nothing to sign; the act of contributing constitutes acceptance.
+
+The CLA has two key terms:
+
+- **Copyright transfer.** All contributions are irrevocably assigned in copyright to **CyberDrain**. You give up ownership of the code you submit.
+- **Relicensing rights.** CyberDrain may use, modify, distribute, sublicense, or relicense your contribution under any terms it chooses, including commercial or custom licenses.
+
+<Warning>
+  Because copyright transfers to CyberDrain on submission, do not contribute code that belongs to your employer or a third party unless you have explicit written authority to transfer that copyright.
+</Warning>
+
+## License
+
+The CIPP frontend is licensed under the [GNU Affero General Public License v3.0 (AGPL-3.0)](https://github.com/KelvinTegelaar/CIPP/blob/main/LICENSE). AGPL-3.0 requires that any modified version you deploy over a network must also be made available under the same license. Custom licensing arrangements are available from CyberDrain upon agreement; sponsors who hold a custom license are not required to publish those terms in the repository.
+
+## How to report an issue
+
+Before opening a new issue, search [existing issues](https://github.com/KelvinTegelaar/CIPP/issues) to avoid duplicates.
+
+When you do open an issue:
+
+- Use a clear, specific title that describes the problem or request.
+- For bugs, include your CIPP version, the browser you are using, and the steps needed to reproduce the problem.
+- For feature requests, describe the use case and why existing functionality does not cover it.
+- Attach any relevant screenshots or error messages.
+
+## How to submit a pull request
+
+<Steps>
+  <Step title="Fork and clone the repository">
+    Fork [https://github.com/KelvinTegelaar/CIPP](https://github.com/KelvinTegelaar/CIPP) to your GitHub account, then clone your fork locally.
+
+    ```bash
+    git clone git@github.com:<your-username>/CIPP.git
+    cd CIPP
+    ```
+  </Step>
+
+  <Step title="Install dependencies">
+    CIPP requires Node.js 22 or later and Yarn.
+
+    ```bash
+    yarn install
+    ```
+  </Step>
+
+  <Step title="Create a feature branch">
+    Work on a dedicated branch. Never commit directly to `main`.
+
+    ```bash
+    git checkout -b fix/describe-your-change
+    ```
+  </Step>
+
+  <Step title="Make your changes and lint">
+    Edit the code, then run the linter before committing.
+
+    ```bash
+    yarn lint
+    # auto-fix where possible:
+    yarn lint-fix
+    ```
+  </Step>
+
+  <Step title="Open the pull request">
+    Push your branch to your fork and open a pull request against the upstream `main` branch. Fill in the pull request template completely — incomplete PRs are likely to be closed without review.
+
+    ```bash
+    git push origin fix/describe-your-change
+    ```
+  </Step>
+</Steps>
+
+<Note>
+  Pull requests that do not follow the project's code style or that include unrelated changes will be asked to revise before merging. Keep each PR focused on a single concern.
+</Note>
+
+## Code of conduct
+
+All contributors are expected to communicate respectfully and inclusively. This applies to pull request comments, issue discussions, and any other project communication. Behavior that makes the project unwelcoming will result in removal from the community.
+
+## Additional resources
+
+<CardGroup cols={2}>
+  <Card title="Developer setup guide" icon="code" href="/dev/dev-guide">
+    Set up a local development environment to run and test CIPP changes before submitting.
+  </Card>
+  <Card title="API reference" icon="plug" href="/dev/api-reference">
+    Understand the backend API patterns used throughout the CIPP codebase.
+  </Card>
+</CardGroup>

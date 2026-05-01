@@ -1,0 +1,139 @@
+---
+title: "CIPP local development setup and project structure"
+description: "Set up a local CIPP development environment with Node.js 22, Yarn, and the Azure Static Web Apps CLI, and understand the project's source layout."
+---
+
+CIPP's frontend is a [Next.js](https://nextjs.org/) application that talks to an Azure Functions backend. For most frontend changes you only need Node.js and Yarn. If you need to test API calls end-to-end — including authentication — you can use the Azure Static Web Apps CLI to proxy both the frontend and a locally running Functions runtime through a single port that matches the production topology.
+
+## Prerequisites
+
+| Requirement | Minimum version | Notes |
+|---|---|---|
+| Node.js | 22.13.0 | Enforced in `package.json` `engines` field |
+| Yarn | any | Used for all dependency and script management |
+| Azure Static Web Apps CLI (`swa`) | latest | Required only for `yarn start-swa` |
+| Azure Functions Core Tools | v4 | Required only for `yarn start-swa` |
+
+Install the Azure Static Web Apps CLI globally:
+
+```bash
+npm install -g @azure/static-web-apps-cli
+```
+
+## Setting up the repository
+
+<Steps>
+  <Step title="Fork and clone">
+    Fork [https://github.com/KelvinTegelaar/CIPP](https://github.com/KelvinTegelaar/CIPP) to your GitHub account, then clone your fork.
+
+    ```bash
+    git clone git@github.com:<your-username>/CIPP.git
+    cd CIPP
+    ```
+  </Step>
+
+  <Step title="Install dependencies">
+    ```bash
+    yarn install
+    ```
+
+    This installs all production and development dependencies declared in `package.json`.
+  </Step>
+
+  <Step title="Start the development server">
+    ```bash
+    yarn dev
+    ```
+
+    This starts Next.js on `http://127.0.0.1:3000`. The server hot-reloads on file changes. API calls that the UI makes will fail until you either connect to a live CIPP backend or run the full SWA stack (see the next step).
+  </Step>
+
+  <Step title="(Optional) Start with Azure Static Web Apps emulation">
+    To run the full local stack — frontend, Functions backend, and SWA auth emulation — start both the Next.js dev server and the Azure Functions Core Tools runtime first, then run:
+
+    ```bash
+    yarn start-swa
+    ```
+
+    This runs:
+
+    ```
+    swa start --swa-config-location .vscode http://127.0.0.1:3000 --api-location http://127.0.0.1:7071 --verbose=silly
+    ```
+
+    The SWA CLI proxies the frontend (port 3000) and the Functions API (port 7071) through a single emulated endpoint that mirrors the Azure-hosted routing, including the `/.auth/` authentication routes.
+  </Step>
+</Steps>
+
+## Available scripts
+
+All scripts are defined in `package.json` and run with `yarn <script>`.
+
+| Script | Command | Purpose |
+|---|---|---|
+| `dev` | `next -H 127.0.0.1` | Start Next.js dev server with hot reload |
+| `build` | `next build` | Production build (removes `package.json` and `yarn.lock` from output) |
+| `start` | `next start` | Serve the production build locally |
+| `lint` | `npx eslint .` | Check code style across the project |
+| `lint-fix` | `npx eslint . --fix` | Auto-fix linting errors where possible |
+| `prettier` | `prettier --write '**/*.{js,jsx,json}'` | Format all JS, JSX, and JSON files |
+| `start-swa` | `swa start ...` | Full-stack local emulation with Azure SWA CLI |
+
+## Project structure
+
+```
+CIPP/
+├── src/
+│   ├── api/              # API call helpers
+│   │   └── ApiCall.jsx   # ApiGetCall, ApiPostCall, ApiGetCallWithPagination
+│   ├── components/       # Shared React components
+│   │   ├── CippCards/    # Card layout components
+│   │   ├── CippComponents/  # Feature-specific components
+│   │   ├── CippTable/    # Table and data display components
+│   │   └── ReportBuilder/   # Report builder PDF renderer
+│   ├── layouts/          # Page layout wrappers
+│   ├── pages/            # Next.js file-based routing
+│   │   ├── cipp/         # CIPP-specific admin pages
+│   │   │   ├── advanced/ # Diagnostics, Exchange cmdlets, timers
+│   │   │   ├── scheduler/   # Scheduled tasks UI
+│   │   │   └── statistics/  # Usage statistics
+│   │   ├── identity/     # User and group management pages
+│   │   ├── email/        # Exchange and mailbox pages
+│   │   ├── endpoint/     # Intune and device pages
+│   │   ├── security/     # Defender and alerts pages
+│   │   ├── tenant/       # Tenant management pages
+│   │   └── tools/        # Breach lookup, report builder, template library
+│   ├── store/            # Redux store and slices
+│   └── utils/            # Utility functions
+├── .vscode/              # SWA config used by start-swa
+├── next.config.js        # Next.js configuration
+└── package.json          # Dependencies and scripts
+```
+
+## Key technology choices
+
+- **Next.js** for file-based routing and SSR/static capabilities
+- **Material UI (MUI v7)** for all UI components and theming
+- **TanStack Query v5** for all server-state management and caching (via `ApiCall.jsx`)
+- **React Hook Form** for form state and validation
+- **Redux Toolkit** for client-side global state (current tenant selection, toasts)
+- **Axios** for HTTP requests to the Azure Functions backend
+
+## Code style
+
+Run `yarn lint` before pushing. The project uses ESLint with `eslint-config-next` and `eslint-config-prettier`. Run `yarn prettier` to auto-format files. Both are enforced in CI.
+
+<Tip>
+  The `.vscode/` directory includes a recommended VS Code extensions list and the SWA config file used by `yarn start-swa`. Opening the project in VS Code will prompt you to install the recommended extensions.
+</Tip>
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="API reference" icon="plug" href="/dev/api-reference">
+    Learn how the frontend calls the Azure Functions backend and the patterns used across all API endpoints.
+  </Card>
+  <Card title="Contributing guide" icon="code-pull-request" href="/dev/contributing">
+    Review the CLA, code of conduct, and pull request process before submitting changes.
+  </Card>
+</CardGroup>

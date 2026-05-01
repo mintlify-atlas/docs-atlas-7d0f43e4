@@ -1,0 +1,58 @@
+---
+title: "Tenant Administration in CIPP: what you can manage"
+description: "Manage all your Microsoft 365 tenants from a single pane. Browse tenants, inspect domains, review audit logs, monitor Secure Score, and more."
+---
+
+CIPP gives you a unified control plane for every Microsoft 365 tenant in your partner portfolio. Rather than switching between customer portals, you can manage tenants, review security posture, inspect audit logs, handle subscriptions, and configure authentication policies — all without leaving a single interface. The tenant selector at the top of every page scopes your view instantly, so you can work across dozens or hundreds of customers without losing context.
+
+## Feature areas
+
+<CardGroup cols={2}>
+  <Card title="Tenants list" icon="building" href="/tenant/overview">
+    View all managed tenants, access admin portals for M365, Exchange, Entra, SharePoint, Teams, Azure, Intune, Security, and Compliance directly from the tenant list.
+  </Card>
+  <Card title="Domains" icon="globe" href="/tenant/overview">
+    List all domains registered in a tenant, including verification status and primary domain designation.
+  </Card>
+  <Card title="Audit logs" icon="scroll" href="/tenant/overview">
+    Search and browse Microsoft Entra ID directory audit logs and sign-in logs across tenants. Save custom searches for recurring investigations.
+  </Card>
+  <Card title="Subscriptions" icon="credit-card" href="/tenant/overview">
+    Inspect active Microsoft 365 and Azure subscriptions, licensing counts, and status for any managed tenant.
+  </Card>
+  <Card title="App consent requests" icon="shield-check" href="/tenant/overview">
+    Review and act on pending OAuth app consent requests before applications gain access to tenant data.
+  </Card>
+  <Card title="Authentication methods" icon="key" href="/tenant/overview">
+    View and manage the authentication methods policy for a tenant, including FIDO2, Authenticator app, and SMS.
+  </Card>
+  <Card title="Secure Score" icon="chart-bar" href="/security/overview">
+    See the Microsoft Secure Score for any tenant alongside improvement actions, and track progress over time.
+  </Card>
+  <Card title="Partner relationships" icon="handshake" href="/tenant/overview">
+    Inspect the delegated and GDAP partner relationships associated with a tenant, including relationship status.
+  </Card>
+</CardGroup>
+
+## Multi-tenant management
+
+The tenant selector appears in the top navigation bar throughout CIPP. Selecting a tenant scopes pages such as the domains list, audit logs, and authentication methods to that customer. Pages that support all-tenants mode — such as the tenants list itself — show data across your entire portfolio in a single table.
+
+<Tip>
+Use the tenants list at **Tenant Administration → Tenants** to open admin portals (Exchange, Entra, SharePoint, Teams, Azure, Intune) for any customer with one click. Quick-access portal links are surfaced directly in the table row.
+</Tip>
+
+## Backup and configuration history
+
+CIPP can capture snapshots of tenant configuration so you can detect drift and restore settings when needed. Configuration backups are managed per-tenant from the tenant list's **Configure Backup** action.
+
+<Info>
+Backup and drift management capabilities are covered in detail under the Standards & Baselines section. See [Standards & Baselines](/tenant/standards-baselines) for how to detect and remediate configuration drift across your tenant portfolio.
+</Info>
+
+## Related sections
+
+- [GDAP Management](/tenant/gdap-management) — set up Granular Delegated Admin Privileges for secure partner access
+- [Standards & Baselines](/tenant/standards-baselines) — enforce consistent configuration policies across tenants
+- [Conditional Access](/tenant/conditional-access) — deploy and manage Conditional Access policies
+- [Security Overview](/security/overview) — Defender incidents, alerts, and cross-tenant security reporting

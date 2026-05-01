@@ -1,0 +1,176 @@
+---
+title: "CIPP API reference: Azure Functions backend overview"
+description: "Overview of the CIPP Azure Functions API layer, authentication model, frontend call patterns, and key List and Exec endpoint conventions."
+---
+
+CIPP's backend is an **Azure Functions** app (PowerShell runtime) that exposes an HTTP API consumed exclusively by the frontend. Every page in the UI calls one or more of these endpoints to retrieve data or trigger actions against Microsoft 365 tenants. The frontend communicates with the API through three helper functions defined in `src/api/ApiCall.jsx`: `ApiGetCall`, `ApiPostCall`, and `ApiGetCallWithPagination`.
+
+## Authentication
+
+Authentication is handled entirely by **Azure Static Web Apps** built-in auth. When CIPP is deployed, the Static Web App is configured to require Azure AD login before any request reaches the frontend. The SWA runtime injects the authenticated user's identity into every request that passes through to the linked Function App.
+
+The frontend detects authentication failures by watching for `302` redirects to `/.auth/login/aad`. When a redirect is detected, the React Query client invalidates the `authmecipp` query key to trigger a re-authentication flow — this logic lives in `ApiCall.jsx:46`.
+
+All API requests include versioned headers (built by `buildVersionedHeaders()` in `src/utils/cippVersion.js`) so the backend can enforce minimum frontend version requirements.
+
+## Endpoint naming conventions
+
+CIPP uses two prefixes to distinguish read and write operations:
+
+| Prefix | Method | Purpose |
+|---|---|---|
+| `ListX` | `GET` | Retrieve and return data without side effects |
+| `ExecX` | `POST` | Perform an action, trigger a change, or run a command |
+
+Always use `GET` for `List` endpoints and `POST` for `Exec` endpoints. Mixing these will result in a `404` or `405` response from the Functions runtime.
+
+## Frontend API helpers
+
+### `ApiGetCall`
+
+Use `ApiGetCall` for all read operations. It wraps TanStack Query's `useQuery` hook.
+
+```javascript
+import { ApiGetCall } from "../api/ApiCall";
+
+const users = ApiGetCall({
+  url: "/api/ListUsers",
+  data: { tenantFilter: "contoso.onmicrosoft.com" },
+  queryKey: "ListUsers-contoso",
+});
+```
+
+Key props:
+
+| Prop | Default | Description |
+|---|---|---|
+| `url` | required | The API endpoint path |
+| `data` | `undefined` | Query parameters passed as `params` |
+| `queryKey` | required | Unique cache key for TanStack Query |
+| `waiting` | `true` | Set to `false` to defer fetching until explicitly triggered |
+| `staleTime` | `300000` | Cache lifetime in milliseconds (5 minutes) |
+| `retry` | `3` | Maximum retry attempts on failure |
+| `bulkRequest` | `false` | If `true` and `data` is an array, fires one request per element |
+| `relatedQueryKeys` | `undefined` | Query keys to invalidate after a successful fetch |
+
+### `ApiPostCall`
+
+Use `ApiPostCall` for all write or action operations. It wraps TanStack Query's `useMutation` hook.
+
+```javascript
+import { ApiPostCall } from "../api/ApiCall";
+
+const offboard = ApiPostCall({
+  relatedQueryKeys: ["ListUsers-*"],
+});
+
+// Trigger the mutation:
+offboard.mutate({
+  url: "/api/ExecOffboardUser",
+  data: { tenantFilter: "contoso.onmicrosoft.com", userId: "user@contoso.com" },
+});
+```
+
+After a successful mutation, `relatedQueryKeys` entries are invalidated. Wildcard patterns (e.g., `"ListUsers-*"`) are supported and will invalidate all matching cached queries.
+
+### `ApiGetCallWithPagination`
+
+Use `ApiGetCallWithPagination` for endpoints that return paginated results via a `Metadata.nextLink` cursor.
+
+```javascript
+import { ApiGetCallWithPagination } from "../api/ApiCall";
+
+const mailboxes = ApiGetCallWithPagination({
+  url: "/api/ListMailboxes",
+  data: { tenantFilter: "contoso.onmicrosoft.com" },
+  queryKey: "ListMailboxes-contoso",
+});
+```
+
+Pagination continues automatically as the user scrolls, using the `nextLink` value returned in `Metadata.nextLink` on each response page. Pagination is disabled automatically when `tenantFilter` is `"AllTenants"`.
+
+## Key endpoints
+
+### `GET /api/ListTenants`
+
+Returns all tenants that CIPP has access to. Used to populate tenant selectors throughout the UI.
+
+```javascript
+ApiGetCall({
+  url: "/api/ListTenants",
+  queryKey: "ListTenants",
+});
+```
+
+### `GET /api/ListUsers`
+
+Returns users for the specified tenant.
+
+```javascript
+ApiGetCall({
+  url: "/api/ListUsers",
+  data: { tenantFilter: "contoso.onmicrosoft.com" },
+  queryKey: "ListUsers-contoso",
+});
+```
+
+### `GET /api/ListMailboxes`
+
+Returns Exchange Online mailboxes for the specified tenant.
+
+```javascript
+ApiGetCall({
+  url: "/api/ListMailboxes",
+  data: { tenantFilter: "contoso.onmicrosoft.com" },
+  queryKey: "ListMailboxes-contoso",
+});
+```
+
+### `POST /api/ExecOffboardUser`
+
+Runs the CIPP offboarding workflow for a user. Accepts a body with offboarding options.
+
+```javascript
+offboard.mutate({
+  url: "/api/ExecOffboardUser",
+  data: {
+    tenantFilter: "contoso.onmicrosoft.com",
+    userId: "user@contoso.com",
+    ConvertToShared: true,
+    RevokeSessions: true,
+  },
+});
+```
+
+### `POST /api/ExecOnboardTenant`
+
+Triggers the CIPP tenant onboarding workflow for a new customer tenant.
+
+```javascript
+onboard.mutate({
+  url: "/api/ExecOnboardTenant",
+  data: {
+    tenantId: "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
+    displayName: "Contoso Ltd",
+  },
+});
+```
+
+## Error handling
+
+The retry logic in `ApiCall.jsx` will not retry requests that return `302`, `401`, `403`, `404`, or `500` status codes. For all other errors it retries up to the configured `retry` limit (default: 3). When retries are exhausted and `toast: true` is set in the call options, a toast notification is dispatched to the Redux store with the error message and the tenant name if available.
+
+<Note>
+  The Functions backend is a separate repository: [KelvinTegelaar/CIPP-API](https://github.com/KelvinTegelaar/CIPP-API). If you need to add or modify an endpoint, changes go there — not in this frontend repository.
+</Note>
+
+## Related pages
+
+<CardGroup cols={2}>
+  <Card title="Developer setup guide" icon="code" href="/dev/dev-guide">
+    Configure your local environment to run and debug the frontend against the API.
+  </Card>
+  <Card title="Scheduler" icon="clock" href="/dev/scheduler">
+    See how the scheduler uses API endpoints to create and manage recurring backend tasks.
+  </Card>
+</CardGroup>

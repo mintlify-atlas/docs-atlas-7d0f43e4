@@ -1,0 +1,122 @@
+---
+title: "Application Deployment and Management via Intune"
+description: "Deploy Win32 apps, MSI packages, and store apps to managed devices across multiple tenants using CIPP application templates and the deployment queue."
+---
+
+CIPP integrates with Microsoft Intune to let you deploy, assign, and manage applications across all your client tenants from one place. You can browse currently deployed apps per tenant, manage assignments, save apps as reusable templates, and push templates to multiple tenants in a single operation.
+
+## Application list
+
+Navigate to **Endpoint > Applications > List** to see all applications published in Intune for the selected tenant. The table shows each app's display name, current assignment state, publishing state, and last modified date.
+
+From the row menu, you can assign the app to users or devices, save it as a template for reuse across tenants, or delete it from the tenant entirely.
+
+<Note>
+  The application list pulls directly from the Intune app catalog via `/api/ListApps`. App types include Win32 LOB apps, Windows Package Manager (WinGet) store apps, Microsoft 365 apps (Office Suite), and others.
+</Note>
+
+## Assigning applications
+
+CIPP supports four assignment targets for any application:
+
+- **All Users** — assigns the app to every licensed user in the tenant
+- **All Devices** — assigns the app to every enrolled device
+- **All Users and All Devices** — assigns globally to both targets simultaneously
+- **Custom Group** — assigns to one or more specific Entra ID groups you select
+
+For each assignment, you choose an **assignment intent**:
+
+| Intent | Behavior |
+|---|---|
+| Required | Installs automatically on targeted devices or user devices |
+| Available | Appears in Company Portal for users to install voluntarily |
+| Available without enrollment | Visible in Company Portal without requiring device enrollment |
+| Uninstall | Removes the app from targeted devices |
+
+You can also choose whether to **replace** existing assignments (overwrite) or **append** to them (keep current assignments and add the new ones). Optionally apply an **assignment filter** to further scope the assignment to devices that match or do not match a defined filter rule.
+
+## Deploying an application from a template
+
+<Steps>
+  <Step title="Open Application Templates">
+    Navigate to **Endpoint > Applications > Templates**. This page lists all saved application templates, including the app count, app types, and description for each template.
+  </Step>
+  <Step title="Select a template and click Deploy">
+    Find the template you want to deploy and click **Deploy Template** from the row menu.
+  </Step>
+  <Step title="Select target tenants">
+    Use the tenant selector to choose one or more tenants. You can select all tenants with the **All Tenants** option.
+  </Step>
+  <Step title="Override assignment (optional)">
+    Choose whether to keep the assignment defined in the template, deploy without assigning, or override the target (all users, all devices, all users and devices, or a custom group name). Custom group names support wildcards and comma-separated values.
+  </Step>
+  <Step title="Confirm and deploy">
+    Review the confirmation prompt showing the template name and app count, then confirm to queue the deployment. CIPP submits the apps to each selected tenant via the Intune API.
+  </Step>
+</Steps>
+
+## Application deployment queue
+
+When you deploy applications, CIPP may place them in a processing queue. Navigate to **Endpoint > Applications > Queue** to see all queued application deployments. The queue shows the tenant name, application name, command line, and assignment target for each pending deployment.
+
+You can **run the queue immediately** using the **Run Queue Now** button, which forces CIPP to process all pending deployments right away. To cancel a queued deployment, select it and choose **Delete Application** from the row menu.
+
+<Tip>
+  Use the queue view to verify that large multi-tenant deployments are processing as expected, especially after deploying a template to many tenants at once.
+</Tip>
+
+## Creating and managing templates
+
+You can create a template directly from an existing app in the application list. Select any deployed app and choose **Save as Template** from the row menu. Give the template a name and optional description. CIPP captures the app configuration and stores it for later deployment.
+
+On the **Application Templates** page you can:
+
+- **Edit** a template to update its configuration (templates not synced from a repository)
+- **Edit Template Name and Description** without modifying the underlying configuration
+- **Clone** a template to create an independent copy (cloned templates are no longer synced with a repository)
+- **Deploy Template** to push it to one or more tenants
+- **Delete Template** to permanently remove it
+
+### GitHub integration
+
+If you have the GitHub integration enabled in CIPP settings, you can **Save to GitHub** to push any template to a connected community repository. This lets you share templates across CIPP instances or collaborate with other partners.
+
+## Apple VPP sync
+
+A **Sync VPP** button is available on the application list page to synchronize Apple Volume Purchase Program tokens for the current tenant. This keeps app licenses and assignments in sync with Apple Business Manager.
+
+## Supported app types
+
+CIPP works with the following Intune app types:
+
+<CardGroup cols={2}>
+  <Card title="Win32 LOB apps" icon="windows">
+    Custom Win32 applications packaged as `.intunewin` files, deployed with detection rules and install commands.
+  </Card>
+  <Card title="WinGet store apps" icon="store">
+    Apps sourced from the Windows Package Manager catalog, identified by WinGet app ID.
+  </Card>
+  <Card title="Microsoft 365 apps" icon="microsoft">
+    Office Suite deployments including Word, Excel, Outlook, and Teams via the Intune Office deployment engine.
+  </Card>
+  <Card title="Script-deployed apps" icon="terminal">
+    Applications installed via PowerShell scripts managed through the MEM Scripts section.
+  </Card>
+</CardGroup>
+
+## Related pages
+
+<CardGroup cols={2}>
+  <Card title="Devices" icon="laptop" href="/endpoint/devices">
+    View enrolled devices and their detected application inventory.
+  </Card>
+  <Card title="Autopilot and Intune configuration" icon="wand-magic-sparkles" href="/endpoint/autopilot-intune">
+    Configure Intune policies and profiles applied at device enrollment.
+  </Card>
+  <Card title="Standards and baselines" icon="list-check" href="/tenant/standards-baselines">
+    Enforce app deployment standards automatically across tenants.
+  </Card>
+  <Card title="Settings and integrations" icon="gear" href="/settings/integrations">
+    Configure GitHub integration to share and sync app templates.
+  </Card>
+</CardGroup>

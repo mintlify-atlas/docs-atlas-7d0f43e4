@@ -1,0 +1,109 @@
+---
+title: "Deploy and manage Conditional Access policies at scale"
+description: "List, deploy, and manage Conditional Access policies across Microsoft 365 tenants using CIPP templates, named locations, and the CA deploy drawer."
+---
+
+Conditional Access is Microsoft Entra ID's policy engine for controlling how and when users can access Microsoft 365 resources. CIPP surfaces the full Conditional Access workflow for every managed tenant — you can view existing policies, change their state, create reusable templates, deploy those templates to one or many tenants at once, and manage the named locations that policies reference. This removes the need to log in to each customer's Entra portal individually when rolling out organisation-wide security controls.
+
+## Listing existing policies
+
+Go to **Tenant → Conditional Access → Policies** to see all Conditional Access policies in the selected tenant. The table shows each policy's display name, state, last modified time, platform and location conditions, user and group scope, application scope, and grant controls.
+
+Click any row to expand its full JSON definition in a side panel — useful for auditing the exact configuration of a policy before making changes.
+
+### Policy state actions
+
+From the row actions menu you can change a policy's state without opening the Entra portal:
+
+| Action | Result |
+|---|---|
+| Enable policy | Sets state to `enabled` — policy is fully enforced |
+| Disable policy | Sets state to `disabled` — policy is inactive |
+| Set to report only | Sets state to `enabledForReportingButNotEnforced` — policy logs but does not block |
+| Change display name | Renames the policy |
+| Add service provider exception | Adds your MSP's service principal as an exclusion |
+| Create template from policy | Saves the policy as a reusable CA template |
+| Delete policy | Permanently removes the policy |
+
+<Warning>
+Enabling a poorly scoped Conditional Access policy can lock users — including administrators — out of the tenant. Always test new policies in **Report only** mode before enforcing them.
+</Warning>
+
+<Tip>
+Use **View Logs** to see a history of Conditional Access changes made through CIPP for the selected tenant. This is useful for auditing and troubleshooting.
+</Tip>
+
+## Named locations
+
+Named locations are reusable sets of IP ranges or countries that Conditional Access policies reference in their conditions. Manage them at **Tenant → Conditional Access → Named Locations**.
+
+You can create two types of named location:
+
+- **IP-based** — a list of CIDR ranges (IPv4 or IPv6). These can be marked as **trusted**, which enables features like compliant device bypass.
+- **Country-based** — a list of countries or regions, with an optional setting to include unknown or unresolvable locations.
+
+Actions available from the named locations table:
+
+| Action | Description |
+|---|---|
+| Add named location | Create a new IP or country-based location |
+| Rename | Change the display name |
+| Mark as trusted / untrusted | Toggle the trusted flag on IP locations |
+| Add country / Remove country | Modify the country list on a country location |
+| Add IP / Remove IP | Add or remove CIDR ranges on an IP location |
+| Delete | Remove the named location entirely |
+
+<Note>
+Named locations are tenant-specific. If you want consistent location definitions across customers, deploy a CA template that references the same IP ranges and recreate the named locations in each tenant.
+</Note>
+
+## Conditional Access templates
+
+Templates let you save a Conditional Access policy definition once and deploy it to multiple tenants without recreating it manually. Manage templates at **Tenant → Conditional Access → Templates**.
+
+From the templates list you can:
+
+- **Import** templates from the CIPP policy catalog or a connected GitHub repository using **Browse Catalog**
+- **Edit** an existing template
+- **Delete** a template
+- **Save to GitHub** (requires GitHub integration) to share templates across your team or with the community
+- **Deploy** a template to one or more tenants
+
+## Deploying a CA policy from a template
+
+<Steps>
+  <Step title="Open the templates list">
+    Go to **Tenant → Conditional Access → Templates**. The table shows all saved CA templates with their display names and GUIDs.
+  </Step>
+  <Step title="Select a template to deploy">
+    Find the template you want to deploy and click **Deploy Template** in the row actions. This opens the CA deploy drawer.
+  </Step>
+  <Step title="Select target tenants">
+    In the deploy drawer, choose one or more tenants to receive the policy. You can select individual tenants or use tenant groups to target a segment of your portfolio.
+  </Step>
+  <Step title="Review and confirm">
+    The drawer shows the policy settings that will be created. Review the state (enabled, disabled, or report only) and any conditions. Confirm to start the deployment.
+
+    <Tip>
+    Deploy new policies as **Report only** first. Monitor the sign-in logs for a week to confirm the policy does not block legitimate access, then switch to **Enabled**.
+    </Tip>
+  </Step>
+  <Step title="Check the deployment logs">
+    Use **View Logs** on the Policies or Templates page to monitor the deployment status. Each API call is recorded with its result, making it easy to identify and retry any failures.
+  </Step>
+</Steps>
+
+## Vacation mode
+
+Vacation mode — which temporarily restricts sign-ins for a tenant during planned downtime or a security incident — has moved to **Identity Management → Administration → Vacation Mode**.
+
+<Info>
+If you navigate to the old **Conditional Access → Vacation Mode** path, CIPP redirects you to the new location automatically.
+</Info>
+
+## Related pages
+
+- [Tenant overview](/tenant/overview)
+- [Standards & Baselines](/tenant/standards-baselines)
+- [Identity users](/identity/users)
+- [Security overview](/security/overview)

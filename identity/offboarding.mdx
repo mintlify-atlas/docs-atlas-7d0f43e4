@@ -1,0 +1,136 @@
+---
+title: "User Offboarding Wizard for Microsoft 365 Tenants"
+description: "Step-by-step offboarding wizard to revoke sessions, remove licences, convert mailboxes, forward email, and optionally delete departing users across tenants."
+---
+
+The CIPP offboarding wizard guides you through a structured departure process for one or more users in a Microsoft 365 tenant. Rather than manually working through a checklist across multiple admin portals, you configure all offboarding actions in a single four-step wizard and let CIPP execute them — or schedule them to run at a future date and time.
+
+Navigate to **Identity > Administration > Offboarding Wizard** to see a table of all scheduled and completed offboarding jobs for the current tenant. Click **Start Offboarding** to open the wizard.
+
+## Offboarding workflow
+
+<Steps>
+  <Step title="Select the tenant">
+    Choose the tenant where the departing user resides. CIPP loads any offboarding defaults saved for that tenant and pre-fills the options step accordingly. If no tenant defaults exist, your personal user defaults are applied.
+  </Step>
+  <Step title="Select users to offboard">
+    Search for and select one or more users. You can offboard multiple users in a single run. When three or more users are selected, CIPP automatically enables scheduling to avoid throttling issues.
+  </Step>
+  <Step title="Configure offboarding options">
+    Review and adjust the offboarding settings. CIPP groups options into two areas:
+
+    **Account and mailbox actions** — toggle each action on or off:
+
+    <AccordionGroup>
+      <Accordion title="Convert to Shared Mailbox">
+        Converts the user's mailbox to a shared mailbox, preserving email history and allowing others to access it without a licence. Disabled when **Delete user** is selected, because deletion removes the associated mailbox.
+      </Accordion>
+      <Accordion title="Hide from Global Address List">
+        Removes the user from the GAL so they no longer appear in address lookups or the people picker.
+      </Accordion>
+      <Accordion title="Cancel all calendar invites">
+        Cancels any outstanding calendar invitations the user has sent, notifying attendees.
+      </Accordion>
+      <Accordion title="Remove user's mailbox permissions">
+        Strips any Full Access, Send As, or Send On Behalf permissions the departing user holds on other mailboxes.
+      </Accordion>
+      <Accordion title="Remove user's calendar permissions">
+        Removes calendar delegation rights the user has granted to or received from others.
+      </Accordion>
+      <Accordion title="Remove all Rules">
+        Deletes all inbox rules configured on the user's mailbox.
+      </Accordion>
+      <Accordion title="Remove all Mobile Devices">
+        Wipes and removes all mobile device partnerships (ActiveSync associations) from the account.
+      </Accordion>
+      <Accordion title="Remove from all groups">
+        Removes the user from every Microsoft 365 group, security group, and distribution list they belong to.
+      </Accordion>
+      <Accordion title="Remove Licences">
+        Strips all licence assignments from the account, freeing the seats for reassignment.
+      </Accordion>
+      <Accordion title="Revoke all sessions">
+        Immediately invalidates all active authentication tokens, forcing sign-out on all devices.
+      </Accordion>
+      <Accordion title="Disable Sign In">
+        Blocks the account from authenticating. The account remains in the directory but cannot sign in.
+      </Accordion>
+      <Accordion title="Clear Immutable ID">
+        Removes the on-premises immutable ID, allowing the account to be managed solely in the cloud after the offboarding.
+      </Accordion>
+      <Accordion title="Reset Password">
+        Generates a new random password and invalidates the existing one.
+      </Accordion>
+      <Accordion title="Remove all MFA Devices">
+        Removes all registered MFA methods and authentication devices from the account.
+      </Accordion>
+      <Accordion title="Remove Teams Phone DID">
+        Releases any Direct Inward Dialling (DID) number assigned to the user in Teams Phone.
+      </Accordion>
+      <Accordion title="Delete user">
+        Permanently deletes the user account. Enabling this option disables all mailbox-related actions above, because the mailbox is removed along with the account.
+
+        <Warning>
+        Deleting the user removes the associated mailbox and prevents actions such as converting to a shared mailbox. The user's OneDrive is retained for 30 days by default. This action moves the account to Deleted Items; use the [Deleted Items](/identity/users) page to restore within the 30-day window if needed.
+        </Warning>
+      </Accordion>
+    </AccordionGroup>
+
+    **Permissions and forwarding** — optionally grant access to the departed user's data:
+
+    <AccordionGroup>
+      <Accordion title="Grant Full Access (no automap)">
+        Gives another user Full Access to the mailbox without automatically mounting it in Outlook.
+      </Accordion>
+      <Accordion title="Grant Full Access (automap)">
+        Gives another user Full Access and automatically mounts the mailbox in their Outlook profile.
+      </Accordion>
+      <Accordion title="Grant OneDrive Full Access">
+        Gives another user Full Access to the departing user's OneDrive for Business.
+      </Accordion>
+      <Accordion title="Forward Email To">
+        Forwards all incoming email to another mailbox. Toggle **Disable Email Forwarding** to clear any existing forwarding instead of setting a new destination.
+      </Accordion>
+      <Accordion title="Keep a copy of forwarded mail">
+        Retains a copy in the original mailbox alongside the forwarded copy.
+      </Accordion>
+      <Accordion title="Out of Office Message">
+        Sets an auto-reply message on the mailbox so senders receive a notification about the departure.
+      </Accordion>
+    </AccordionGroup>
+
+    **Scheduling and notifications:**
+
+    - **Schedule this offboarding** — set a future date and time for the offboarding to run. Useful for planning departures in advance.
+    - **Send results to** — send the offboarding outcome report to a webhook, email address, or PSA ticket.
+    - **Reference** — an optional string added to the notification title and scheduled task name for easy identification.
+  </Step>
+  <Step title="Confirm and submit">
+    Review a summary of all selected options and the affected users. Click **Submit** to queue the offboarding job immediately, or confirm the scheduled date if scheduling was enabled. CIPP returns the job to the offboarding table where you can track its status.
+  </Step>
+</Steps>
+
+## Monitoring offboarding jobs
+
+The offboarding table on the main **Offboarding Wizard** page lists all jobs for the current tenant. Use the status filters to view **Running**, **Planned**, **Completed**, or **Failed** jobs. Click any row to open the side panel with full task details and available actions.
+
+<Note>
+Tenant-level offboarding defaults can be saved in tenant settings. When a tenant is selected in step 1, CIPP automatically pre-fills the options step with those defaults, reducing manual configuration for recurring offboarding work.
+</Note>
+
+## Related pages
+
+<CardGroup cols={2}>
+  <Card title="User management" icon="users" href="/identity/users">
+    Manage user accounts, view deleted items, and restore offboarded users during the 30-day recovery window.
+  </Card>
+  <Card title="Groups and roles" icon="users-gear" href="/identity/groups-roles">
+    Manually remove users from specific groups outside of the offboarding workflow.
+  </Card>
+  <Card title="Email mailboxes" icon="envelope" href="/email/mailboxes">
+    Convert, delegate, and manage shared mailboxes after an offboarding is complete.
+  </Card>
+  <Card title="Scheduler" icon="clock" href="/dev/scheduler">
+    View and manage all scheduled tasks created by CIPP, including offboarding jobs.
+  </Card>
+</CardGroup>

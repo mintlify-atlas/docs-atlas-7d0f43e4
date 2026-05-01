@@ -1,0 +1,100 @@
+---
+title: "Intune device management and remote actions in CIPP"
+description: "View, monitor, and act on Intune-enrolled devices across all your client tenants from one place: sync, wipe, retrieve BitLocker keys, and more."
+---
+
+CIPP gives you a unified view of every Intune-enrolled device across all your managed tenants. From the **Devices** list under **Endpoint > MEM**, you can check compliance status, review enrollment details, run remote actions, and drill into individual device records — all without switching between tenant portals.
+
+## Device inventory
+
+Navigate to **Endpoint > MEM > Devices** to see all managed devices for the selected tenant. The table shows each device's name, primary user, compliance state, OS and version, manufacturer, model, enrollment date, owner type, enrollment type, and join type.
+
+Select any row to open the side panel, which shows extended details and available actions for that device. Click **View Device** to open the full device record with tabs for compliance policies, configuration policies, detected applications, associated users, and group memberships.
+
+<Note>
+  Use the tenant switcher to change the active tenant before loading the device list. CIPP retrieves devices directly from the Microsoft Graph `deviceManagement/managedDevices` endpoint.
+</Note>
+
+## Device actions
+
+CIPP exposes a broad set of remote actions on managed devices. Actions that apply only to specific platforms (Windows, macOS, Android, iOS) are shown conditionally based on the device's operating system.
+
+<CardGroup cols={2}>
+  <Card title="Sync and restart" icon="rotate">
+    Trigger a policy sync or reboot a device immediately. Use **Sync Device** to force the device to check in with Intune, or **Reboot Device** for a remote restart.
+  </Card>
+  <Card title="Locate device" icon="location-dot">
+    Send a **Locate Device** command to retrieve the current GPS location of a supported mobile device.
+  </Card>
+  <Card title="Windows Defender" icon="shield">
+    Run a **Quick Scan** or **Full Scan** with Windows Defender, or trigger a **signature update** to keep threat definitions current.
+  </Card>
+  <Card title="Recovery keys" icon="key">
+    Retrieve the **BitLocker recovery key** for Windows devices or the **FileVault key** for macOS devices directly from CIPP.
+  </Card>
+  <Card title="Local admin passwords" icon="lock">
+    Retrieve the current **LAPS password** for a Windows device, or trigger a **rotation** to generate a new local admin password.
+  </Card>
+  <Card title="Passcode management" icon="mobile">
+    **Reset** the passcode on Android devices or **remove** the passcode requirement on iOS devices.
+  </Card>
+  <Card title="Wipe and retire" icon="trash">
+    **Wipe** a device with options to keep or remove enrollment data, or use **Retire** to remove company data while leaving personal data intact.
+  </Card>
+  <Card title="Fresh Start" icon="arrows-rotate">
+    Reinstall Windows while optionally keeping or removing user data. Also supports a **protected wipe** that continues through power loss.
+  </Card>
+</CardGroup>
+
+### Rename and reassign
+
+You can **Rename Device** to update the display name in Intune, or use **Change Primary User** to reassign the device to a different user in the tenant. Both actions are available from the device row menu or the device detail page.
+
+### Autopilot Reset
+
+For Windows devices, **Autopilot Reset** wipes the device and retains enrollment data, returning it to an out-of-box Autopilot experience. This is useful for reassigning devices to new users without a full re-enrollment.
+
+<Warning>
+  Wipe, Fresh Start, and Delete actions are irreversible. Confirm device ownership and data backup status before running these actions.
+</Warning>
+
+### Apple DEP sync
+
+A **Sync DEP** button is available on the Devices page to synchronize Apple Device Enrollment Program tokens for the current tenant. DEP sync can only be triggered once every 15 minutes.
+
+## Compliance and configuration reporting
+
+The device detail view shows all compliance policies and configuration policies applied to a device, along with each policy's current state (compliant, not compliant, or unknown). This lets you diagnose compliance failures without navigating to the Intune portal.
+
+For tenant-wide compliance reporting, see the compliance policy list at **Endpoint > MEM > Compliance Policies**.
+
+## MEM configuration templates
+
+CIPP stores reusable MEM (Microsoft Endpoint Manager) configuration templates that you can deploy to one or more tenants. Templates cover configuration policies, compliance policies, app protection policies, scripts, and more.
+
+Navigate to **Endpoint > MEM > Templates** to browse, create, edit, clone, and deploy templates. You can also import from a community repository or save templates back to GitHub.
+
+<Tip>
+  Use templates to maintain a consistent policy baseline across all tenants. Deploy the same configuration policy to every tenant in a single action instead of configuring each one manually.
+</Tip>
+
+### Comparing policies
+
+The **Compare Policies** tool at **Endpoint > MEM > Compare Policies** lets you diff any two policies side by side. You can compare a CIPP template against a live tenant policy, a tenant policy against a community repository file, or any combination. Differences are highlighted by property with a status indicator (Different, Only in A, Only in B, or Equal).
+
+## Related pages
+
+<CardGroup cols={2}>
+  <Card title="Applications" icon="box-open" href="/endpoint/applications">
+    Deploy and manage applications to Intune-enrolled devices.
+  </Card>
+  <Card title="Autopilot and Intune configuration" icon="wand-magic-sparkles" href="/endpoint/autopilot-intune">
+    Set up Autopilot profiles, enrollment status pages, and Intune policies.
+  </Card>
+  <Card title="Standards and baselines" icon="list-check" href="/tenant/standards-baselines">
+    Enforce compliance baselines across all tenants automatically.
+  </Card>
+  <Card title="Security overview" icon="shield" href="/security/overview">
+    Monitor device security posture alongside Defender alerts and incidents.
+  </Card>
+</CardGroup>

@@ -1,0 +1,158 @@
+---
+title: "Transport Rules and Spam Filter Management in CIPP"
+description: "Create transport rules, manage anti-spam and connection filter policies, configure TABL entries, and deploy spam filter templates across tenants."
+---
+
+Exchange Online Protection (EOP) sits in front of every mailbox in your managed tenants and processes all inbound and outbound mail. CIPP surfaces the key controls you need to manage mail flow and anti-spam configuration across all tenants: transport rules for custom routing and policy enforcement, spam and connection filter policies, and Tenant Allow/Block Lists (TABL) for fine-grained sender, domain, and URL controls. You can also save any configuration as a reusable template and push it to multiple tenants in one operation.
+
+<Tabs>
+  <Tab title="Transport rules">
+    ## Transport rules
+
+    Transport rules (mail flow rules) run in Exchange Online and let you inspect message properties — sender, recipient, subject, attachments, headers — and take actions such as redirecting, rejecting, modifying, or logging messages. They are the primary tool for enforcing email policy that goes beyond what spam filters handle.
+
+    Navigate to **Email > Transport > Transport Rules** to see all rules for the selected tenant.
+
+    The table shows each rule's name, state (enabled or disabled), mode, error action, last modified date, and any comments. You can filter to show only enabled rules or only disabled rules.
+
+    ### Creating a transport rule
+
+    <Steps>
+      <Step title="Open the new rule drawer">
+        From the Transport Rules page, click **New Transport Rule**. A drawer opens on the right side. You can also use **Add Transport Rule** to import from a template.
+      </Step>
+      <Step title="Define conditions">
+        Configure the conditions that trigger the rule — for example, sender domain matches, message contains specific words, or the recipient is a distribution group. Multiple conditions are combined with AND logic by default.
+      </Step>
+      <Step title="Set actions">
+        Choose what happens when the conditions are met. Common actions include: prepend a disclaimer, redirect to a specific address, reject with a custom error message, apply a message classification, or set a header value.
+      </Step>
+      <Step title="Configure exceptions and settings">
+        Optionally add exception conditions to exclude specific senders or recipients. Set the rule priority and mode (**Enforce** for production, **Audit** or **AuditAndNotify** for testing without affecting delivery).
+      </Step>
+      <Step title="Save the rule">
+        Submit the form. CIPP calls `/api/AddEditTransportRule` and the rule becomes active in Exchange Online. The table refreshes to show the new rule.
+      </Step>
+    </Steps>
+
+    ### Managing existing rules
+
+    Select any rule row to open the details side panel, or use the row actions menu:
+
+    | Action | Description |
+    |---|---|
+    | Enable rule | Activates a disabled rule |
+    | Disable rule | Deactivates the rule without deleting it |
+    | Edit rule | Open the edit drawer to modify conditions, actions, or settings |
+    | Create template | Save the rule configuration as a reusable template |
+    | Delete rule | Permanently removes the rule |
+
+    <Warning>
+      Transport rules apply immediately after saving. Test rules in **Audit** mode before switching to **Enforce** to avoid unintended mail disruption.
+    </Warning>
+
+    ### Transport rule templates
+
+    Navigate to **Email > Transport > Transport Rule Templates** to manage your saved templates. Templates let you capture a working rule configuration and deploy it to any number of tenants without recreating it from scratch.
+
+    From the Templates page you can:
+
+    - Deploy a template to tenants using **Add Transport Rule** (template-based deployment)
+    - Delete templates you no longer need
+    - Save templates to a GitHub community repository if you have the GitHub integration enabled
+
+    <Tip>
+      Templates are especially useful for rules that you deploy consistently to new customers — for example, external email warning banners, legal disclaimers, or outbound DLP rules.
+    </Tip>
+  </Tab>
+  <Tab title="Spam filters">
+    ## Spam and connection filters
+
+    Exchange Online Protection applies spam, malware, and connection filtering to all mail before it reaches mailboxes. CIPP lets you view and manage these policies per tenant and deploy consistent configurations using templates.
+
+    ### Spam filter policies
+
+    Navigate to **Email > Spam Filter > Spam Filters** to list all spam filter policies for the selected tenant. The table shows the policy name, whether it is the default policy, its rule state, priority, and the configured actions for high-confidence spam, bulk mail, and phishing messages.
+
+    Available actions per policy:
+
+    | Action | Description |
+    |---|---|
+    | Enable rule | Activates a disabled spam filter rule |
+    | Disable rule | Deactivates the rule |
+    | Create template | Save the policy as a reusable spam filter template |
+    | Delete rule | Permanently removes the policy |
+
+    The side panel shows the full set of spam scoring settings, including image links, numeric IPs, redirect ports, JavaScript in HTML, and SPF hard-fail behavior.
+
+    #### Deploying a spam filter
+
+    Click **Deploy Spamfilter** to open the deployment page. Select one or more tenants (or all tenants), optionally pick a saved template to pre-fill the JSON parameters, then submit. CIPP posts the configuration to `/api/AddSpamFilter` for each selected tenant.
+
+    ### Connection filter policies
+
+    Navigate to **Email > Spam Filter > Connection Filters** to view the connection filter policy for the selected tenant. Connection filters allow or block mail based on the sending IP address before content inspection occurs.
+
+    The table shows the policy name, IP allow list, IP block list, and whether the Microsoft Safe List is enabled. Click **Deploy ConnectionFilter** to push a connection filter configuration to tenants using a saved template.
+
+    <Note>
+      Each tenant has exactly one connection filter policy (the default policy). You cannot create additional connection filter policies in Exchange Online Protection.
+    </Note>
+
+    ### Spam filter templates
+
+    Navigate to **Email > Spam Filter > Spam Filter Templates** to manage reusable spam filter configurations. Templates work the same way as transport rule templates: save a working policy configuration and deploy it to multiple tenants from a single action.
+
+    ### Quarantine policies
+
+    Navigate to **Email > Spam Filter > Quarantine Policies** to control what end users can do with their quarantined messages. The page shows both built-in and custom quarantine policies along with the global quarantine notification settings for the tenant.
+
+    Global settings you can configure:
+
+    - **Notification frequency** — how often users receive quarantine digest emails (4 hours, daily, or weekly)
+    - **Custom sender address** — the from address used for quarantine notification emails
+    - **Organization branding** — whether to apply your tenant's branding to notification emails
+
+    For each custom quarantine policy you can set the release action preference, and toggle end-user permissions including Delete, Preview, Block Sender, Allow Sender, and Quarantine Notification.
+
+    <Warning>
+      Before deleting a quarantine policy, confirm it is not referenced by any anti-phishing, anti-spam, anti-malware, or Safe Attachments policy. Removing an active quarantine policy will revert affected policies to default end-user permissions.
+    </Warning>
+  </Tab>
+</Tabs>
+
+## Tenant Allow/Block Lists (TABL)
+
+The Tenant Allow/Block List is an Exchange Online Protection feature that lets you explicitly allow or block specific senders, spoofed senders, domains, URLs, and files. Entries in the TABL override spam filter verdicts for the specified tenant.
+
+Navigate to **Email > Administration > Tenant Allow/Block Lists** to view and manage TABL entries for the selected tenant.
+
+The table shows each entry's value, list type, action (allow or block), notes, last used date, last modified date, and expiration date.
+
+### Adding entries
+
+Click **Add Entry** to open the drawer. Fill in:
+
+- **List type** — Sender, Domain, URL, or File
+- **Action** — Allow or Block
+- **Value** — the sender address, domain, URL pattern, or file hash to match
+- **Expiration** — optional date after which the entry is automatically removed
+- **Notes** — optional description for auditing
+
+<Note>
+  TABL entries are tenant-scoped. You need to add entries separately for each tenant, or use a TABL template (see below) to deploy entries across multiple tenants at once.
+</Note>
+
+### TABL templates
+
+Navigate to **Email > Administration > Tenant Allow/Block List Templates** to manage templates that deploy sets of TABL entries to multiple tenants.
+
+Each template defines:
+
+- **Template name** — a label for the template
+- **List type** — the type of entries in the template (Sender, Domain, URL, or File)
+- **List method** — Allow or Block
+- **Entries** — the values to add
+- **Expiration settings** — whether entries should expire and after how many days
+
+Deploy a template from the **Add Entry** drawer on the TABL page, or directly from the templates list. Templates are ideal for maintaining a consistent blocklist of known malicious senders or a shared allowlist of trusted third-party senders across your entire customer base.

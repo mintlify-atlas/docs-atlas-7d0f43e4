@@ -1,0 +1,118 @@
+---
+title: "Manage GDAP relationships and role templates in CIPP"
+description: "Set up Granular Delegated Admin Privileges in CIPP: map roles, create templates, send invites, onboard tenants, and offboard relationships safely."
+---
+
+Granular Delegated Admin Privileges (GDAP) is Microsoft's modern partner access model, replacing the legacy Delegated Admin Privileges (DAP) model. Rather than granting broad Global Administrator access across your entire partner relationship, GDAP lets you define exactly which Entra ID roles your technicians hold in each customer tenant — and for how long. CIPP provides a complete GDAP management workflow: from mapping roles to security groups in your partner tenant, through creating reusable templates, sending onboarding invites, tracking relationship health, and offboarding customers cleanly.
+
+<Info>
+GDAP is required for new partner tenants. Microsoft has deprecated DAP for most partner operations. If you are still using DAP, migrating to GDAP via CIPP is strongly recommended.
+</Info>
+
+## GDAP overview dashboard
+
+The GDAP overview at **Tenant → GDAP Management** shows four summary counters at a glance:
+
+- **GDAP Relationships** — total active relationships across all customers
+- **Mapped Admin Roles** — Entra roles mapped to security groups in your partner tenant
+- **Role Templates** — saved combinations of role mappings ready to apply to new invites
+- **Pending Invites** — invites sent to customers awaiting acceptance
+
+The setup wizard on the overview page tracks your progress through the four-step onboarding sequence and highlights which step you should complete next.
+
+## GDAP onboarding flow
+
+<Steps>
+  <Step title="Map your admin roles">
+    Go to **GDAP Management → Role Mappings** and map each Entra admin role you need to a security group in your partner tenant. For example, map the *User Administrator* role to a `CIPP-UserAdmins` security group. Technicians placed in the group automatically inherit the role in customer tenants.
+
+    Use **Map GDAP Roles** to add a new mapping. You can also promote existing mappings directly into a template from the row actions.
+
+    <Tip>
+    Create separate security groups for different permission tiers (e.g., helpdesk, administrator, read-only) so you can control access granularly per technician.
+    </Tip>
+  </Step>
+  <Step title="Create role templates">
+    Go to **GDAP Management → Role Templates** and group your role mappings into named templates. A template represents a standard set of roles you want to grant for a particular customer type — for example, a *Full Management* template might include User Administrator, Exchange Administrator, and Teams Administrator.
+
+    CIPP can also create a **CIPP Defaults** template automatically. If this template is missing, a warning appears on the Role Templates page with a one-click option to create it.
+
+    <Note>
+    The CIPP Defaults template includes the minimum roles CIPP needs to operate all of its management features. Deploy it to every new customer relationship to ensure CIPP can run standards, manage users, and read configuration data.
+    </Note>
+  </Step>
+  <Step title="Create GDAP invites">
+    Go to **GDAP Management → Invites** and select **New Invite**. Choose the role template to include in the invite. CIPP generates a unique invite URL and an onboarding URL.
+
+    Share the **invite URL** with the customer's Global Administrator. Once they accept, the GDAP relationship is created with the roles defined in your template.
+
+    You can add an internal reference (such as a ticket number or client name) to each invite for tracking purposes.
+
+    <Warning>
+    Once an invite is accepted and a GDAP relationship is in approval-pending status, you cannot terminate or modify it from the invite. Use the Offboarding page to terminate an active relationship.
+    </Warning>
+  </Step>
+  <Step title="Onboard the tenant">
+    After the customer accepts the invite, go to **GDAP Management → Onboarding** to track the onboarding process. Each onboarding record shows the relationship, current status, onboarding steps completed, and any log messages.
+
+    If an onboarding fails partway through, use **Retry Onboarding** on the row to restart from where it left off. Use **Cancel Onboarding** to abort a failed or unwanted onboarding.
+
+    Click **Start Tenant Onboarding** to manually initiate an onboarding for a tenant whose GDAP relationship was created outside of CIPP.
+  </Step>
+</Steps>
+
+## Managing existing relationships
+
+**GDAP Management → Relationships** lists all active GDAP relationships across your portfolio. Each relationship record shows the customer tenant, the assigned roles, and the relationship expiry date.
+
+From the relationship list you can drill into a specific relationship to view its detailed role assignments and check if all expected roles are present.
+
+<Tip>
+GDAP relationships have a maximum duration set by Microsoft. CIPP surfaces expiry dates in the relationships table so you can renew relationships before they lapse and cause service interruption.
+</Tip>
+
+## Role templates
+
+Role templates let you standardize GDAP configurations across customers without re-selecting roles manually for every new invite. A template stores a named set of role-to-security-group mappings.
+
+| Action | Where |
+|---|---|
+| Create a new template | **Role Templates → Add Template** |
+| Edit an existing template | Row action **Edit Template** |
+| Delete a template | Row action **Delete Template** |
+| Apply a template to an invite | Select the template when creating a new invite |
+
+You can also create a **Drift Clone** of a template directly from the Standards Templates page, keeping your GDAP roles aligned with your baselines.
+
+## Offboarding a GDAP relationship
+
+When you stop managing a customer, use **GDAP Management → Offboarding** to cleanly remove all delegated access.
+
+<Warning>
+Offboarding actions that terminate GDAP relationships or CSP contracts are **irreversible**. Microsoft sends email notifications to tenant administrators and contacts when a GDAP relationship is terminated.
+</Warning>
+
+Select the tenant to offboard. CIPP displays a summary of what will be affected:
+
+- **GDAP Relationships** — count of active relationships that will be terminated
+- **CSP Contract** — whether a reseller/CSP contract exists
+- **MSP Applications** — multitenant applications originating from your CSP tenant
+- **Vendor Applications** — third-party vendor applications present in the customer tenant
+
+Available offboarding actions:
+
+| Action | Effect |
+|---|---|
+| Remove vendor applications | Removes selected third-party vendor service principals |
+| Remove CSP guest users | Removes guest accounts originating from your partner tenant |
+| Remove CSP notification contacts | Removes technical, security, and marketing notification contacts |
+| Remove domain analyser data | Purges stored domain analysis results for this tenant |
+| Remove multitenant CSP apps | Removes all multitenant apps including CIPP-SAM — **terminates CIPP access** |
+| Terminate GDAP relationships | Ends all active GDAP relationships |
+| Terminate contract | Terminates the CSP/reseller contract relationship |
+
+## Related pages
+
+- [Tenant overview](/tenant/overview)
+- [Setup & permissions](/setup/permissions)
+- [Identity users](/identity/users)

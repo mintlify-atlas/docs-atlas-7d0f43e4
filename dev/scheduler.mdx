@@ -1,0 +1,112 @@
+---
+title: "CIPP scheduler: creating and managing recurring tasks"
+description: "Use the CIPP built-in scheduler to create one-time and recurring automated tasks against specific tenants, and monitor job state from the scheduler table."
+---
+
+The CIPP scheduler is a built-in task engine that lets you run any CIPP command on a schedule — against a single tenant or across all managed tenants. Scheduled tasks are stored in Azure Table Storage and processed by the Azure Functions backend. From the scheduler page at **CIPP > Scheduler**, you can create, edit, clone, and delete jobs, and see the current state of every task in the system.
+
+## Task states
+
+Every scheduled task moves through the following states:
+
+| State | Meaning |
+|---|---|
+| **Planned** | Task is queued and waiting for its scheduled time |
+| **Running** | Task is currently being executed by the backend |
+| **Completed** | Task finished successfully |
+| **Failed** | Task encountered an error during execution |
+
+Use the filter bar on the scheduler page to view only tasks in a specific state. The **Show System Jobs** toggle reveals hidden internal CIPP tasks that run automatically in the background.
+
+## Creating a scheduled task
+
+<Steps>
+  <Step title="Open the scheduler">
+    Navigate to **CIPP > Scheduler** in the sidebar. Click **Add Task** in the top-right corner of the table. A drawer opens with the task configuration form.
+  </Step>
+
+  <Step title="Set the task name">
+    Enter a descriptive name that identifies what the task does and which tenant it targets. This name appears in the task table and in any notifications triggered by the job.
+  </Step>
+
+  <Step title="Select the tenant">
+    Choose the tenant this task should run against. Select **All Tenants** to run the command across every managed tenant sequentially.
+  </Step>
+
+  <Step title="Choose the command">
+    Select the CIPP command you want to schedule. Commands follow the same naming conventions as API endpoints — `ListX` commands retrieve data, `ExecX` commands perform actions.
+  </Step>
+
+  <Step title="Configure parameters">
+    Depending on the command you selected, additional parameter fields will appear. Fill in any required parameters for the command.
+  </Step>
+
+  <Step title="Set the schedule time and recurrence">
+    Choose when the task should first run. Then set a recurrence interval if you want the task to repeat:
+
+    | Recurrence | Interval |
+    |---|---|
+    | Once | Runs one time only |
+    | Every hour | Repeats every 60 minutes |
+    | Every 4 hours | Repeats every 4 hours |
+    | Daily | Repeats every 24 hours |
+    | Weekly | Repeats every 7 days |
+    | Monthly | Repeats every 30 days |
+  </Step>
+
+  <Step title="Configure post-execution actions">
+    Optionally configure what happens after the task completes — for example, sending an email with the results or writing output to a webhook. These settings correspond to the **PostExecution** field on the task record.
+  </Step>
+
+  <Step title="Save the task">
+    Click **Add Task** to save. The task appears in the scheduler table with the state **Planned** and the next scheduled execution time.
+  </Step>
+</Steps>
+
+## Editing and cloning tasks
+
+From the task table, click the row to expand its details, or use the row action menu to:
+
+- **Edit** — Opens the same drawer pre-populated with the existing task configuration. Changes take effect immediately.
+- **Clone** — Creates a copy of the task with a new ID, allowing you to duplicate a working task and adjust its parameters or schedule.
+- **Delete** — Permanently removes the task from the queue.
+
+<Note>
+  Cloning a task does not reset its execution history. The cloned task starts with **Planned** state regardless of the source task's state.
+</Note>
+
+## Viewing task results
+
+Click any row in the scheduler table to open the task detail panel. This panel shows:
+
+- The command and parameters that were executed
+- The tenant the task ran against
+- Execution timestamps (scheduled time, actual execution time)
+- The full output or error returned by the backend
+
+For recurring tasks, the detail panel shows the results of the most recent execution. Previous executions are visible in the diagnostics page.
+
+## API endpoints used by the scheduler
+
+| Endpoint | Method | Purpose |
+|---|---|---|
+| `/api/ListScheduledItems` | GET | Retrieve all scheduled tasks |
+| `/api/ListScheduledItems?ShowHidden=true` | GET | Include internal system jobs |
+| `/api/AddScheduledItem` | POST | Create a new scheduled task |
+| `/api/EditScheduledItem` | POST | Update an existing task |
+| `/api/RemoveScheduledItem` | POST | Delete a task |
+
+<Tip>
+  The report builder can schedule PDF generation directly from the builder interface. See the [report builder documentation](/dev/report-builder) for details.
+</Tip>
+
+## Related pages
+
+<CardGroup cols={2}>
+  <Card title="Report builder" icon="chart-bar" href="/dev/report-builder">
+    Schedule automated PDF report generation from the report builder.
+  </Card>
+  <Card title="API reference" icon="plug" href="/dev/api-reference">
+    Understand the API patterns behind the scheduler endpoints.
+  </Card>
+</CardGroup>

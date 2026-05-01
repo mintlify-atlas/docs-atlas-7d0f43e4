@@ -1,0 +1,213 @@
+---
+title: "CIPP backend, permissions, and configuration settings"
+description: "Configure CIPP backend resources, verify application permissions, manage excluded licenses, control feature flags, and manage tenants and backups."
+---
+
+CIPP's **Settings** area is the operational control panel for your CIPP deployment. Here you can verify that your SAM application has the right permissions across all managed tenants, jump directly to Azure backend resources for troubleshooting, suppress irrelevant license SKUs from reports, toggle experimental features, manage the tenant list, and protect your configuration with on-demand or scheduled backups. Most settings under this area are global and affect all CIPP users in your organisation.
+
+<Tabs>
+  <Tab title="Backend">
+
+## Backend resources
+
+Navigate to **Settings → Backend** to access direct links to the Azure resources that power your CIPP deployment. Each card opens the corresponding Azure portal view in a new tab, so you can monitor performance, review deployment history, or manage access without leaving CIPP.
+
+| Resource | What you can do |
+|---|---|
+| **Resource Group** | View all CIPP Azure resources in one place (excluding the SAM application). |
+| **Key Vault** | Inspect saved authentication secrets. Access is restricted by default — you need to add yourself explicitly. |
+| **Static Web App (Role Management)** | Invite additional users to CIPP and manage their role assignments (e.g. reader, editor, admin). |
+| **Function App (Deployment Center)** | Review deployment history and connect a GitHub repository for CI/CD. |
+| **Function App (Configuration)** | Inspect and edit Function App environment settings. |
+| **Function App (Overview)** | Monitor performance, restart the function app, or review recent errors. |
+| **Cloud Shell** | Launch an Azure Cloud Shell window with pre-populated PowerShell commands for common CIPP operations. |
+
+<Tip>
+The **Cloud Shell** card includes a **Command Reference** panel with ready-to-use PowerShell snippets for tasks like listing CIPP users, checking Function App status, and watching live logs — scoped automatically to your deployment's resource group and function name.
+</Tip>
+
+<Note>
+The Backend tab is only relevant when CIPP is self-hosted. If you are using the CIPP-hosted service, most of these links will not be applicable.
+</Note>
+
+  </Tab>
+  <Tab title="Permissions">
+
+## Permissions check
+
+Navigate to **Settings → Permissions** to validate that your SAM (Secure Application Model) application has all the delegated and application permissions CIPP needs to manage your tenants. Three separate checks run in parallel:
+
+<AccordionGroup>
+  <Accordion title="Permissions check">
+    Verifies that the SAM application holds the correct Microsoft Graph and Exchange Online API permissions. CIPP checks both delegated permissions (acting as the signed-in user) and application permissions (acting as itself).
+
+    Click **Refresh** to re-run a live check against Microsoft, bypassing the cache. Use **Details** to open a side panel showing which permissions are present, missing, or mismatched.
+  </Accordion>
+  <Accordion title="GDAP check">
+    Scans all GDAP (Granular Delegated Admin Privileges) relationships for issues — such as missing roles, expired relationships, or tenants where GDAP has not been established. The check surfaces any relationship that would prevent CIPP from operating correctly on a tenant.
+
+    Use **Details** to review the specific GDAP issues per tenant.
+  </Accordion>
+  <Accordion title="Tenants check">
+    Confirms that CIPP can reach and authenticate against every tenant in your portfolio. Tenants that are excluded, unreachable, or have stale CPV tokens are flagged here.
+  </Accordion>
+</AccordionGroup>
+
+### Exporting and importing permission reports
+
+You can export the results of all three checks as a single JSON file (**Export Report**) to share with support or store for audit purposes. When exporting, enable **Redact Customer Data** to mask tenant names, GUIDs, and UPNs before sharing externally.
+
+To review a saved report without running a live check, use **Import Report** (upload a `.json` file) or **Paste Report** (read from the clipboard). Imported reports display an "Imported" chip next to each check card.
+
+<Warning>
+Running a fresh permission check may make many API calls across all your managed tenants. On large deployments it can take a minute or more to complete.
+</Warning>
+
+  </Tab>
+  <Tab title="Licenses">
+
+## Excluded licenses
+
+Navigate to **Settings → Licenses** to manage which Microsoft 365 license SKUs CIPP excludes from license reporting and compliance views. By default, CIPP ships with a built-in exclusion list that omits trial SKUs, internal Microsoft SKUs, and other low-signal licenses that typically clutter reports.
+
+### Adding an exclusion
+
+1. Click **Add Excluded License**.
+2. Select a license from the searchable dropdown, which covers all known M365 SKUs.
+3. If the SKU you need is not in the list, toggle **Advanced Mode** to enter the GUID and SKU name manually.
+4. Click **Save**.
+
+### Removing an exclusion
+
+Select one or more rows in the table and choose **Delete Exclusion** from the row actions. CIPP will confirm before removing.
+
+### Restoring defaults
+
+Click **Restore Defaults** to re-apply the CIPP default exclusion list. Enable **Full Reset** in the confirmation dialog to clear all existing entries — including any you added manually — before re-applying the defaults.
+
+<Note>
+Excluded licenses affect license reporting pages across CIPP. They do not affect the actual licenses assigned to users — only how CIPP surfaces them in reports and compliance checks.
+</Note>
+
+  </Tab>
+  <Tab title="Features">
+
+## Feature flags
+
+Navigate to **Settings → Features** to enable or disable optional CIPP features. Feature flags control experimental functionality, beta capabilities, or features that are disabled by default because they affect performance or behaviour across all tenants.
+
+The feature table shows:
+
+- **Name** — the feature identifier.
+- **Enabled** — current state (on or off).
+- **Description** — what the feature does and any caveats.
+
+To change a feature's state, select it in the table and choose **Enable Feature** or **Disable Feature** from the row actions. Only features where **AllowUserToggle** is true can be changed by users — others are managed by the CIPP development team.
+
+<Warning>
+Some features affect scheduled timers, API endpoints, or UI pages when toggled. Review the description carefully before enabling a feature in a production environment.
+</Warning>
+
+  </Tab>
+  <Tab title="Tenants">
+
+## Tenant management
+
+Navigate to **Settings → Tenants** to manage the list of tenants CIPP can see and act on. This page differs from the **Tenant Administration → Tenants** list — it is focused on the backend relationship between CIPP and each tenant, not day-to-day tenant operations.
+
+### Excluding and including tenants
+
+Excluded tenants are hidden from all CIPP pages and skipped by scheduled tasks such as standards enforcement. To exclude a tenant, select it and choose **Exclude Tenants**. To re-include it, choose **Include Tenants**.
+
+<Warning>
+Excluding a tenant does not remove it from Microsoft Partner Center or alter any delegated access. It only prevents CIPP from acting on it. The exclusion date and the user who made the change are recorded in the table.
+</Warning>
+
+### CPV permissions
+
+CPV (Customer Permission Validation) tokens are what CIPP uses to authenticate against each managed tenant. Use the following actions on any tenant row when you need to repair access:
+
+| Action | When to use |
+|---|---|
+| **Refresh CPV Permissions** | Re-consent permissions for an existing service principal. Use when a tenant's access token is stale or expired. |
+| **Reset CPV Permissions** | Delete the service principal and re-add it from scratch. Use only when a refresh does not resolve the issue, as it is more disruptive. |
+
+### Refreshing the CIPP cache
+
+Each tenant has a local cache of Microsoft data (users, groups, licences, etc.) that CIPP uses to speed up page loads. If you see stale data, select the tenant, choose **Refresh CIPPDB Cache**, then pick a cache type from the dropdown.
+
+### Force refreshing a tenant
+
+Click **Force Refresh** in the top-right of the page to trigger a full tenant re-discovery. Enter a default domain name or tenant ID to scope the refresh to a single tenant, or leave the field empty to refresh all tenants.
+
+### GDAP trace
+
+Select a tenant and choose **GDAP Trace** to run a diagnostic that checks the GDAP relationship status and surfaces any issues that would block CIPP operations.
+
+  </Tab>
+  <Tab title="Backup">
+
+## Backup and restore
+
+Navigate to **Settings → Backup** to manage configuration snapshots of your CIPP instance. Backups capture CIPP-managed configuration (such as standards, policies, and notification settings) and are stored in the Azure Storage Account associated with your CIPP deployment.
+
+### Running a backup
+
+Click **Run Backup** to create a snapshot immediately. The backup appears in the table with a timestamp once it completes.
+
+### Scheduling automatic backups
+
+Click **Schedule Backups** to enable a daily automated backup via the CIPP scheduler. The info bar at the top of the page shows the current backup count, the time of the last backup, whether automatic backups are enabled, and the next scheduled run.
+
+To stop automatic backups, click **Remove Schedule**.
+
+### Restoring a backup
+
+You can restore from a backup stored in CIPP or from a JSON file you have downloaded locally:
+
+- **From the table** — select a backup row and choose **Restore Backup** to open the restore wizard. CIPP validates the backup file and guides you through selecting which parts of the configuration to restore.
+- **From a file** — click **Restore From File**, select a `.json` backup file from your computer, and proceed through the wizard.
+
+### Downloading a backup
+
+Select a backup row and choose **Download Backup** to save the backup as a `.json` file. If CIPP detects that the backup can be automatically repaired (for example, to fix schema drift between versions), the downloaded file is labelled `_repaired`.
+
+<Note>
+Backups are stored in your Azure Storage Account, not in CIPP's database. Make sure your Azure Storage Account retention and redundancy settings align with your recovery time objectives.
+</Note>
+
+  </Tab>
+  <Tab title="Partner webhooks">
+
+## Automated onboarding
+
+Navigate to **Settings → Automated Onboarding** to configure a Microsoft Partner Center webhook subscription that triggers automatic tenant onboarding and alerting whenever events occur in Partner Center (such as a new customer relationship being created).
+
+When enabled, CIPP registers a webhook endpoint with Partner Center. Any events Partner Center sends to that endpoint are processed by CIPP automatically.
+
+### Configuring the webhook
+
+1. Toggle **Enable Automated Onboarding** on.
+2. In the **Event Types** field, select which Partner Center events should trigger the webhook. Common events include new customer relationships and subscription changes.
+3. Optionally enable **Exclude onboarded tenants from top-level standards** to prevent newly onboarded tenants from immediately inheriting any standards you have applied to all tenants.
+4. Click **Save** to register or update the subscription.
+
+The property list above the form shows the current subscription status, the registered webhook URL, and the last-updated timestamp.
+
+### Testing the webhook
+
+Click **Test Webhook** to send a test event from Partner Center to CIPP. A results card will appear showing the HTTP response code, status, response message, and timestamp. A `200` response code confirms CIPP received and processed the test event.
+
+<Note>
+Saving the settings replaces any existing Partner Center webhook subscription that points to a different URL. If you have other systems subscribed to Partner Center events, you will need to re-register them.
+</Note>
+
+  </Tab>
+</Tabs>
+
+## Related pages
+
+- [Permissions setup](/setup/permissions) — initial SAM application configuration and consent
+- [GDAP Management](/tenant/gdap-management) — manage GDAP roles and relationships across tenants
+- [Notifications & SIEM](/settings/notifications-siem) — configure alert channels and log forwarding
+- [Integrations](/settings/integrations) — connect third-party tools to CIPP

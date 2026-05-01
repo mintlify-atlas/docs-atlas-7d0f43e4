@@ -1,0 +1,182 @@
+---
+title: "Windows Autopilot and Intune Configuration in CIPP"
+description: "Register Autopilot devices, create deployment profiles, configure enrollment status pages, and manage Intune configuration policies across tenants."
+---
+
+CIPP provides full management of Windows Autopilot and Microsoft Endpoint Manager (MEM) configuration from a single interface. You can register devices for Autopilot, assign deployment profiles, configure enrollment status pages, deploy configuration and compliance policies, manage app protection policies, and run scripts — all across multiple tenants without switching portals.
+
+<Tabs>
+  <Tab title="Autopilot">
+
+## Autopilot device management
+
+Windows Autopilot lets new devices configure themselves automatically from the cloud. CIPP manages the full Autopilot lifecycle: registering devices, assigning profiles, and monitoring deployment status.
+
+### Autopilot device list
+
+Navigate to **Endpoint > Autopilot > List Devices** to see all Autopilot-registered devices for the selected tenant. The table shows the display name, serial number, model, manufacturer, group tag, and current enrollment state.
+
+Available actions per device:
+
+- **Assign device** — assign the device to a specific user by selecting them from the tenant user list
+- **Rename Device** — set a new display name (max 15 characters, letters/numbers/hyphens only, no spaces)
+- **Edit Group Tag** — update the group tag used for dynamic group membership (max 128 characters)
+- **Delete Device** — remove the device registration from Autopilot
+
+Use **Add Autopilot Devices** to register new devices via the import wizard (see below), or **Sync Devices** to force a sync between Intune and Autopilot (once every 10 minutes).
+
+### Registering Autopilot devices
+
+<Steps>
+  <Step title="Open the add device wizard">
+    Navigate to **Endpoint > Autopilot > Add Device** or click **Add Autopilot Devices** from the device list. The wizard guides you through the import in four steps.
+  </Step>
+  <Step title="Select the target tenant">
+    Choose the tenant you want to register the devices into. Only a single tenant can be selected at a time for Autopilot device import.
+  </Step>
+  <Step title="Import device data">
+    Upload a CSV file with the device hardware information. CIPP maps the following fields:
+
+    | CSV field | Property |
+    |---|---|
+    | Device Serial Number | Serial number |
+    | Manufacturer name | OEM manufacturer |
+    | Device model | Model name |
+    | Windows Product ID | Product key |
+    | Hardware Hash | Hardware hash |
+    | Group Tag | Group tag |
+
+    Download the sample CSV template from the import step to ensure your file is formatted correctly.
+  </Step>
+  <Step title="Set extra options">
+    Configure any additional Autopilot import options, such as assigning a group tag to all imported devices.
+  </Step>
+  <Step title="Confirm and submit">
+    Review the import summary and confirm. CIPP submits the device records to the Autopilot service via `/api/AddAPDevice`.
+  </Step>
+</Steps>
+
+### Autopilot deployment profiles
+
+Deployment profiles control how Autopilot configures a device during the out-of-box experience (OOBE). Navigate to **Endpoint > Autopilot > Profiles** to view all profiles for the selected tenant.
+
+The profile list shows the display name, description, language, whether hardware hash extraction is enabled, and the device name template.
+
+To create a new profile, click **Add Profile** and fill in the profile drawer. To delete a profile, select it and choose **Delete Profile** — this action cannot be undone.
+
+<Warning>
+  Deleting an Autopilot deployment profile removes it from all assigned device groups. Devices that have already completed Autopilot enrollment are not affected, but newly enrolling devices will fall back to the default profile or no profile.
+</Warning>
+
+### Enrollment Status Pages
+
+The Enrollment Status Page (ESP) shows users installation progress during Autopilot deployment and can block device use until required apps and policies are applied. Navigate to **Endpoint > Autopilot > Status Pages** to view all ESPs configured in the tenant.
+
+The list shows each ESP's display name, description, timeout, whether progress is shown, and whether the user can retry or use the device on failure.
+
+Click **Add Status Page** to create a new ESP using the configuration drawer. CIPP queries the `deviceEnrollmentConfigurations` endpoint filtered to `windows10EnrollmentCompletionPageConfiguration` type.
+
+  </Tab>
+  <Tab title="Intune (MEM)">
+
+## Intune policy and configuration management
+
+The **Endpoint > MEM** section covers all Intune configuration management beyond device inventory: policies, compliance rules, app protection, scripts, templates, and assignment filters.
+
+### Setting up an Autopilot profile with MEM policies
+
+<Steps>
+  <Step title="Create or import a configuration template">
+    Go to **Endpoint > MEM > Templates** and browse the template catalog, import from a community repository, or create a new template from scratch. Templates capture the full policy JSON so you can redeploy the same settings to any tenant.
+  </Step>
+  <Step title="Deploy the template to target tenants">
+    Select the template and choose **Deploy Template**. Pick the tenant or tenants you want to target, confirm the assignment, and submit. CIPP creates the policy in each tenant via the Intune API.
+  </Step>
+  <Step title="Verify the policy in the Configuration Policies list">
+    Navigate to **Endpoint > MEM > Configuration Policies** to confirm the policy appears in the list with the correct assignment state.
+  </Step>
+  <Step title="Assign the policy to device groups">
+    From the Configuration Policies list, use the policy actions to assign it to all users, all devices, or a custom Entra ID group. You can also set an assignment filter to target only devices matching specific properties.
+  </Step>
+  <Step title="Verify compliance">
+    Open **Endpoint > MEM > Devices** and check individual device records to confirm the policy state shows as applied or compliant once devices check in.
+  </Step>
+</Steps>
+
+### Configuration policies
+
+**Endpoint > MEM > Configuration Policies** lists all Intune configuration policies for the selected tenant. Each row shows the policy name, type, assignment targets, exclusions, description, and last modified date.
+
+Use **Deploy Policy** to create a new policy from a CIPP template or the policy catalog. Available actions include creating a template from an existing policy, assigning, editing assignments, and deleting.
+
+You can toggle a **cached report** view if you need to load policy data faster for large tenants.
+
+### Compliance policies
+
+**Endpoint > MEM > Compliance Policies** lists all device compliance policies. Compliance policies define the rules devices must meet (minimum OS version, encryption required, firewall state, etc.) to be considered compliant in Entra ID Conditional Access.
+
+Use **Deploy Policy** to deploy a new compliance policy from the catalog or a CIPP template.
+
+### App protection and configuration policies
+
+**Endpoint > MEM > App Protection Policies** lists mobile application management (MAM) policies that protect corporate data within apps, even on unmanaged personal devices. This covers both app protection policies (data loss prevention rules) and app configuration policies (app settings pushed to managed apps).
+
+### Scripts
+
+**Endpoint > MEM > Scripts** lists all PowerShell scripts (Windows), shell scripts (macOS/Linux), and remediation scripts (Windows Defender health scripts) deployed through Intune.
+
+You can **edit script content** directly in CIPP's built-in code editor, assign scripts to all users, all devices, or custom groups, and delete scripts. The editor supports PowerShell and shell script syntax highlighting.
+
+### Templates
+
+**Endpoint > MEM > Templates** is the central library for all reusable Intune policy templates in CIPP. Templates can be:
+
+- Created from scratch or imported from the policy catalog
+- Organized into **packages** for grouped deployment
+- **Cloned** to create independent copies
+- **Synced** from a community GitHub repository (synced templates cannot be edited locally)
+- **Saved to GitHub** to share with other CIPP instances
+
+### Reusable settings
+
+**Endpoint > MEM > Reusable Settings** and **Reusable Settings Templates** let you define configuration setting groups that can be referenced across multiple policies. This reduces duplication when the same settings (such as a VPN configuration or certificate profile) appear in several policies.
+
+### Assignment filters
+
+**Endpoint > MEM > Assignment Filters** lists Intune assignment filters for the tenant. Filters let you scope policy and app assignments to devices that match specific property rules (such as OS version, manufacturer, or enrollment type) without creating separate device groups.
+
+**Assignment Filter Templates** store reusable filter definitions you can deploy to multiple tenants.
+
+### Comparing policies
+
+Use **Endpoint > MEM > Compare Policies** to diff any two Intune policies side by side. You can compare:
+
+- A CIPP template vs. a live tenant policy
+- Two tenant policies from the same or different tenants
+- A community repository file vs. a template or tenant policy
+
+Differences are shown property by property with color-coded status chips: **Different**, **Only in A**, **Only in B**, or **Equal**. Raw JSON for each source is also available in collapsible sections.
+
+<Tip>
+  The policy comparison tool is useful for auditing configuration drift — compare what a tenant has deployed against your standard template to identify settings that have changed.
+</Tip>
+
+  </Tab>
+</Tabs>
+
+## Related pages
+
+<CardGroup cols={2}>
+  <Card title="Devices" icon="laptop" href="/endpoint/devices">
+    View and manage enrolled devices, compliance state, and run remote actions.
+  </Card>
+  <Card title="Applications" icon="box-open" href="/endpoint/applications">
+    Deploy applications to Intune-enrolled devices across tenants.
+  </Card>
+  <Card title="Standards and baselines" icon="list-check" href="/tenant/standards-baselines">
+    Automate policy deployment as part of tenant onboarding standards.
+  </Card>
+  <Card title="Conditional access" icon="shield-halved" href="/tenant/conditional-access">
+    Use device compliance state in Conditional Access policies.
+  </Card>
+</CardGroup>

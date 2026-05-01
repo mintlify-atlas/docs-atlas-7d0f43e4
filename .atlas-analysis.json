@@ -1,23 +1,11 @@
 {
-  "$schema": "https://mintlify.com/docs.json",
-  "name": "CIPP",
+  "projectType": "saas",
+  "projectName": "CIPP",
+  "projectDescription": "CIPP (CyberDrain Improved Partner Portal) is a Microsoft 365 multitenant management platform for Microsoft Partners to administer users, tenants, email, endpoints, and security across all their client organizations from a single interface.",
   "theme": "maple",
-  "colors": {
-    "primary": "#0078D4",
-    "light": "#E6F3FB",
-    "dark": "#004E8C"
-  },
-  "navbar": {
-    "primary": {
-      "type": "github",
-      "href": "https://github.com/KelvinTegelaar/CIPP"
-    }
-  },
-  "footer": {
-    "socials": {
-      "github": "https://github.com/KelvinTegelaar/CIPP"
-    }
-  },
+  "primaryColor": "#0078D4",
+  "lightColor": "#E6F3FB",
+  "darkColor": "#004E8C",
   "navigation": {
     "tabs": [
       {
@@ -106,5 +94,33 @@
         ]
       }
     ]
-  }
+  },
+  "keyFeatures": [
+    "Multitenant Microsoft 365 management from a single interface",
+    "GDAP (Granular Delegated Admin Privileges) management and onboarding",
+    "Standards and baseline enforcement across tenants",
+    "User lifecycle management: onboarding, offboarding, JIT admin, vacation mode",
+    "Email and Exchange administration: mailboxes, transport rules, spam filters, quarantine",
+    "Endpoint and Intune management: devices, applications, Autopilot profiles",
+    "Security monitoring: Defender, incidents, Secure Score, risky users",
+    "Conditional access policy management and templates",
+    "Scheduler for recurring tasks and automated jobs",
+    "Third-party integrations and SIEM connector",
+    "Custom reporting, breach lookup, and executive report generation",
+    "Alert and notification configuration"
+  ],
+  "publicApiSurface": [
+    "POST /api/ExecCombinedSetup",
+    "GET /api/ListTenants",
+    "GET /api/ListUsers",
+    "GET /api/ListGroups",
+    "GET /api/ListMailboxes",
+    "GET /api/ListDevices",
+    "GET /api/ListConditionalAccessPolicies",
+    "GET /api/ListStandardsRun",
+    "POST /api/ExecOffboardUser",
+    "POST /api/ExecOnboardTenant",
+    "GET /api/ListScheduledItems",
+    "GET /api/ListAlerts"
+  ]
 }

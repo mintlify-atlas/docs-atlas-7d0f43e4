@@ -1,0 +1,131 @@
+---
+title: "Exchange Resources, Contacts, and Shared Mailboxes – CIPP"
+description: "Manage room and equipment mailboxes, shared mailboxes, mail contacts, contact templates, and distribution lists across tenants in CIPP."
+---
+
+Beyond personal mailboxes, Exchange Online hosts a range of collaborative objects that require ongoing management: room and equipment mailboxes for booking shared resources, shared mailboxes for team inboxes, mail contacts for external address book entries, and distribution lists for group email delivery. CIPP brings all of these into a single interface so you can manage them across every tenant without switching between portals.
+
+## Resource types
+
+<CardGroup cols={2}>
+  <Card title="Room mailboxes" icon="building" href="/email/resources-contacts">
+    Manage bookable meeting rooms across the tenant. View room location details (building, floor, city), set capacity, manage permissions, and control sign-in access. Add new rooms directly from the list view.
+  </Card>
+  <Card title="Equipment mailboxes" icon="computer" href="/email/resources-contacts">
+    Manage bookable equipment such as projectors, vehicles, or AV gear. Equipment mailboxes appear in the address book and accept booking requests the same way room mailboxes do.
+  </Card>
+  <Card title="Shared mailboxes" icon="users" href="/email/mailboxes">
+    Create and manage shared mailboxes accessible by multiple users. Shared mailboxes do not require a dedicated license for basic access. Manage shared mailboxes from the Mailboxes page.
+  </Card>
+  <Card title="Contacts" icon="address-book" href="/email/resources-contacts">
+    Manage mail contacts (external contacts visible in the address book) and mail users (external accounts that can receive mail). Add, edit, or remove contacts and deploy contacts from saved templates.
+  </Card>
+  <Card title="Contact templates" icon="copy" href="/email/resources-contacts">
+    Define contact configurations once and deploy them to multiple tenants. Useful for maintaining a consistent set of partner or vendor contacts across your customer base.
+  </Card>
+  <Card title="Distribution lists" icon="share-nodes" href="/email/resources-contacts">
+    View and manage mail-enabled distribution groups, mail-enabled security groups, and dynamic distribution groups. Manage membership and settings from the Identity section.
+  </Card>
+</CardGroup>
+
+## Room mailboxes
+
+Navigate to **Email > Resources > Rooms** to list all room mailboxes in the selected tenant. The table shows the display name, email address, building, floor, capacity, city, state, country, and whether the room is hidden from the address list.
+
+### Adding a room
+
+Click **Add Room** to open the drawer. You can specify:
+
+- Display name and email address
+- Location details: building, floor, city, state, country
+- Capacity (maximum attendees)
+- Whether to hide the room from the global address list
+
+### Managing a room
+
+Select any room row to access actions:
+
+| Action | Description |
+|---|---|
+| Edit room | Update room details and location attributes |
+| Edit permissions | Navigate to the Exchange permissions page to set delegates and booking policies |
+| Block sign-in | Prevent interactive sign-in for the room account |
+| Unblock sign-in | Re-enable interactive sign-in |
+| Delete room | Permanently remove the room mailbox |
+
+<Note>
+  The **Edit permissions** action opens the user's Exchange settings page in the Identity section. From there you can configure full access, send-as, and booking policy delegates for the room.
+</Note>
+
+<Note>
+  Room mailboxes synced from on-premises Active Directory (where `isDirSynced` is true) cannot be edited or deleted from CIPP. Manage those objects through your on-premises directory.
+</Note>
+
+## Equipment mailboxes
+
+Navigate to **Email > Resources > Equipment** to list all equipment mailboxes in the selected tenant. Equipment mailboxes function identically to room mailboxes in terms of booking behavior, but represent physical assets rather than meeting spaces.
+
+The table shows the display name, UPN, primary SMTP address, and whether the mailbox is hidden from address lists.
+
+Available actions mirror the room mailbox actions: edit equipment details, edit Exchange permissions, block or unblock sign-in, and delete.
+
+<Tip>
+  Use descriptive display names and email addresses for equipment mailboxes — for example, `Projector - Board Room (projector-boardroom@contoso.com)` — so users can find and book the right resource from Outlook.
+</Tip>
+
+## Shared mailboxes
+
+Shared mailboxes are managed from the main **Mailboxes** page (**Email > Administration > Mailboxes**). Filter the list to **View Shared Mailboxes** to see only shared mailboxes in the tenant.
+
+To add a shared mailbox, click **Add Shared Mailbox** in the Mailboxes toolbar and provide a display name, username, and domain. The mailbox is created immediately without requiring a separate license for basic access.
+
+For full details on shared mailbox management — including permissions, forwarding, and litigation hold — see the [Mailboxes](/email/mailboxes) page.
+
+## Contacts
+
+Navigate to **Email > Administration > Contacts** to list all mail contacts and mail users in the selected tenant. The table shows the display name, email address, company, and whether the contact is synced from on-premises Active Directory.
+
+### Adding a contact
+
+Click **Add Contact** to open the drawer. Specify the contact's display name, first and last name, email address, and whether to hide the contact from the global address list.
+
+### Managing contacts
+
+| Action | Description |
+|---|---|
+| Edit contact | Update the contact's details (not available for directory-synced contacts) |
+| Set source of authority | Switch between cloud-managed and on-premises-managed for hybrid environments |
+| Remove contact | Delete the contact (not available for directory-synced contacts) |
+
+<Warning>
+  Contacts synchronized from on-premises Active Directory cannot be deleted directly from CIPP. Make the change in your on-premises directory and wait for the next Entra ID Connect sync cycle.
+</Warning>
+
+You can also deploy contacts from a saved template using the **Deploy Contact Template** button — useful when you need to provision the same set of contacts (such as partner contacts or internal escalation aliases) across multiple tenants.
+
+## Contact templates
+
+Navigate to **Email > Administration > Contact Templates** to manage reusable contact configurations. Templates let you define a contact record once and push it to multiple tenants without re-entering the data.
+
+From the templates list you can:
+
+- Create a new template using **New Contact Template**
+- Deploy an existing template to one or more tenants using **Deploy Contact Template**
+- Edit a template to update the contact details
+- Delete templates you no longer need
+- Save templates to a GitHub community repository if you have the GitHub integration configured
+
+<Tip>
+  Contact templates are particularly useful for MSPs that onboard a standard set of vendor or partner contacts for every new customer. Define the template once and deploy it during tenant onboarding.
+</Tip>
+
+## Distribution lists and mail-enabled groups
+
+Distribution lists and mail-enabled security groups are managed through the **Identity** section of CIPP rather than the Email section, because they share underlying objects with Entra ID groups. Navigate to **[Identity > Groups & Roles](/identity/groups-roles)** to view and manage:
+
+- Distribution groups
+- Mail-enabled security groups
+- Dynamic distribution groups
+- Microsoft 365 groups with Exchange functionality
+
+From that page you can add and remove members, update group settings, and manage owners — all without leaving CIPP.

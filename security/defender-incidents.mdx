@@ -1,0 +1,220 @@
+---
+title: "Microsoft Defender Incidents and Alerts in CIPP"
+description: "View and manage Defender incidents, alerts, and email threats across tenants. Configure Defender policies and monitor device protection status with CIPP."
+---
+
+CIPP integrates with Microsoft Defender for Business and Microsoft Defender 365 to give you a unified view of security incidents, alerts, and endpoint protection status across all your managed tenants. From a single interface you can triage incidents, update their status, assign work, and deploy Defender policies — without switching between per-tenant security portals.
+
+## Incidents
+
+Navigate to **Security > Incidents > Incidents List** to see all Defender incidents across tenants. The page defaults to the last 30 days and supports custom date range filtering.
+
+Each incident record shows:
+
+| Column | Description |
+|---|---|
+| Created | Timestamp the incident was first detected |
+| Tenant | Which managed tenant the incident belongs to |
+| Id | Incident identifier |
+| Display Name | Human-readable incident title |
+| Status | Active, In Progress, or Resolved |
+| Severity | High, Medium, Low, or Informational |
+| Tags | Labels applied to the incident |
+| Incident URL | Direct link to the incident in Microsoft Security Center |
+
+The all-tenants selector is supported, so you can see every open incident across your entire customer base in one view.
+
+### Incident response workflow
+
+<Steps>
+  <Step title="Review the incident">
+    Open the incident list at **Security > Incidents > Incidents List**. Apply a date filter if needed to focus on recent activity. Review severity, tenant, and display name to prioritize which incidents need attention first.
+  </Step>
+  <Step title="Expand the details panel">
+    Click any row to open the off-canvas details panel. This surfaces additional fields including the assigned-to value, classification, determination, and a direct link to the full incident in Microsoft Security Center.
+  </Step>
+  <Step title="Assign the incident">
+    Use the **Assign to self** action to take ownership of the incident. This is useful for tracking who is actively working a case across your team.
+  </Step>
+  <Step title="Update the status">
+    Move the incident through its lifecycle using the status actions:
+    - **Set status to active** — confirms the incident is being investigated
+    - **Set status to in progress** — indicates active remediation work is underway
+    - **Set status to resolved** — closes the incident once remediation is complete
+  </Step>
+  <Step title="Remediate in context">
+    For incidents that require deeper investigation, follow the **Incident URL** to Microsoft Security Center where the full attack story, alert evidence, and automated investigation results are available.
+  </Step>
+</Steps>
+
+<Warning>
+Incident status changes are written back to Microsoft via the Graph Security API. Ensure your CIPP service account has the appropriate Defender permissions on the tenant before attempting status updates.
+</Warning>
+
+## Alerts
+
+CIPP surfaces two distinct alert streams, each from a different Microsoft security surface.
+
+### Microsoft Graph security alerts
+
+**Security > Incidents > Alerts List** aggregates alerts from the Microsoft Graph Security API, which consolidates signals from Defender for Endpoint, Defender for Identity, Microsoft Sentinel, and other connected security products.
+
+Alert fields include event date/time, title, category, severity, tenant, and involved users. You can set an alert to **In Progress** or **Resolved** directly from the table.
+
+### Email and collaboration alerts
+
+**Security > Incidents > Email & Collaboration Alerts** surfaces alerts from Microsoft Defender for Office 365 (MDO), covering threats detected in email, SharePoint, OneDrive, and Teams.
+
+The MDO alert detail panel provides a richer set of fields:
+
+- Detection source and service source
+- MITRE ATT&CK techniques
+- Threat display name and threat family
+- Affected resources and involved users
+- Recommended actions
+- First and last activity timestamps
+- Links to both the alert and the associated incident in Microsoft Security Center
+
+MDO alerts support the same lifecycle actions as incidents: assign to self, set active, set in progress, and resolve.
+
+### Check browser extension alerts
+
+**Security > Incidents > Check Alerts** collects detections from the Check by Cyberdrain browser extension, which protects users against AiTM (Adversary-in-the-Middle) phishing attacks in real time.
+
+Fields include the tenant, detection type, flagged URL, reason for the flag, risk score, threshold, and the username and IP of the reporting user. This view requires the Check extension to be deployed to end users.
+
+<Note>
+Check alerts are a separate data stream from Defender alerts. They require deploying the Check extension to users' browsers via Edge Add-ons or the Chrome Web Store.
+</Note>
+
+## Defender status and policies
+
+### Defender protection status
+
+**Security > Defender > Defender Status** shows the Windows Defender protection state for each device enrolled in a tenant. The table includes:
+
+- Device name
+- Malware protection enabled
+- Real-time protection enabled
+- Network inspection system enabled
+- Device state
+- Quick scan and full scan overdue flags
+- Signature update overdue
+- Reboot required
+- Last reported date/time
+
+This view is scoped to a single tenant (all-tenants mode is not supported). Use it to quickly identify devices where protection has lapsed or signatures are stale.
+
+### Software vulnerabilities (TVM)
+
+**Security > Defender > Software Vulnerabilities Status** surfaces data from Microsoft Defender Threat and Vulnerability Management (TVM). Each row represents a vulnerable software package across the tenant's devices.
+
+Columns include:
+
+| Column | Description |
+|---|---|
+| Affected devices count | Number of devices with this vulnerability |
+| Affected devices | Device names or identifiers |
+| OS Platform | Windows, macOS, Android, etc. |
+| Software vendor | Publisher of the affected software |
+| Software name | Name of the vulnerable package |
+| Vulnerability severity | Critical, High, Medium, Low |
+| CVSS score | Common Vulnerability Scoring System score |
+| Security update available | Whether a patch exists |
+| Exploitability level | No exploit, public exploit, verified exploit, exploit in kit |
+| CVE ID | Common Vulnerabilities and Exposures identifier |
+
+<Tip>
+Configure a **Vulnerabilities** scripted alert in CIPP to be notified automatically when new exploitable vulnerabilities are detected. You can filter by minimum CVSS severity and exploitability level. See [Alerts and notifications](/security/alerts-notifications) for setup details.
+</Tip>
+
+### MDE onboarding status
+
+**Security > Reports > MDE Onboarding Status** shows whether each tenant has Microsoft Defender for Endpoint onboarding complete. Possible states are:
+
+- **Enabled** / **Available** — MDE is onboarded and operational
+- **Unavailable** — MDE is not responding or not configured
+- **Unresponsive** — MDE is configured but not reporting
+- **Not Set Up** — onboarding has not been started
+
+In single-tenant mode a **Start Onboarding** button appears for tenants that are not yet set up, linking directly to the MDE onboarding wizard in Microsoft Security Center. You can also trigger a manual sync to refresh the cached status.
+
+## Deploying Defender policies
+
+**Security > Defender > Defender Setup** provides a guided wizard to deploy a consistent set of Defender and Intune endpoint security policies across one or more tenants at once.
+
+The wizard is organized into four sections:
+
+<AccordionGroup>
+  <Accordion title="Defender setup (compliance and device connection)">
+    Configure the Microsoft Defender for Endpoint compliance connector. Options include:
+
+    - Allow MDE to enforce Endpoint Security Configurations (MEM compliance)
+    - Connect Android, iOS/iPadOS, macOS, and Windows devices to MDE
+    - Block device access when MDE is unavailable per platform
+    - Enable app sync for iOS certificate metadata collection
+    - EDR: auto-connect the configuration package from the Intune connector
+    - EDR: enable sample sharing
+    - Assign EDR policy to all users, all devices, or all users and devices
+  </Accordion>
+
+  <Accordion title="Defender defaults policy (antivirus and scanning)">
+    Configure the antivirus policy deployed via Intune. Settings include archive scanning, behavior monitoring, cloud protection, email scanning, network drive scanning, removable drive scanning, script scanning, real-time protection, network file scanning, signature update interval, cloud block level, network protection mode, and on-access protection.
+
+    Threat remediation actions for Low, Moderate, High, and Severe severity threats can each be set independently to: Clean, Quarantine, Remove, Allow, User Defined, or Block.
+
+    Assign the policy to all users, all devices, or all users and devices.
+  </Accordion>
+
+  <Accordion title="Exclusion policy">
+    Define paths, file extensions, and process names to exclude from Defender scanning. Useful for known-safe business applications that generate false positives. Assign the exclusion policy to users or devices as needed.
+  </Accordion>
+
+  <Accordion title="Attack Surface Reduction (ASR) rules">
+    Enable individual ASR rules in Block, Audit, or Warn mode. Available rules include:
+
+    - Block execution of potentially obfuscated scripts
+    - Block credential stealing from LSASS
+    - Block process creations from PSExec and WMI commands
+    - Block persistence through WMI event subscriptions
+    - Block Office applications from creating executable content or injecting into other processes
+    - Block Win32 API calls from Office macros
+    - Block JavaScript or VBScript from launching downloaded executables
+    - Block untrusted and unsigned processes from USB
+    - Use advanced protection against ransomware
+    - Block executable content from email client and webmail
+    - Block Adobe Reader from creating child processes
+    - Block webshell creation for servers
+    - Block rebooting in Safe Mode
+    - Block abuse of exploited vulnerable signed drivers
+
+    Assign ASR rules to users, devices, or both.
+  </Accordion>
+</AccordionGroup>
+
+### Saving as templates
+
+Before submitting the wizard, you can save the current Defender configuration as a set of Intune templates using **Save as Template**. Provide a template name prefix and an optional package name to group the templates. Each policy type (AV policy, ASR, EDR, Exclusion) is saved as a separate named template, which can then be applied through CIPP standards for consistent deployment across tenants.
+
+<Note>
+The Defender Setup wizard deploys policies via Microsoft Intune. Tenants must have Intune (Microsoft Endpoint Manager) licensing and the CIPP service account must have the necessary Intune permissions to create and assign device configuration profiles.
+</Note>
+
+---
+
+## Related pages
+
+<CardGroup cols={2}>
+  <Card title="Security overview" icon="shield-check" href="/security/overview">
+    Secure Score, risky users, Safe Links, and security reports.
+  </Card>
+  <Card title="Alerts and notifications" icon="bell" href="/security/alerts-notifications">
+    Set up automated Defender incident and alert notifications.
+  </Card>
+  <Card title="Endpoint devices" icon="laptop" href="/endpoint/devices">
+    Manage Intune-enrolled devices and compliance policies.
+  </Card>
+  <Card title="Tenant standards" icon="list-check" href="/tenant/standards-baselines">
+    Deploy Defender templates as part of tenant baseline standards.
+  </Card>
+</CardGroup>

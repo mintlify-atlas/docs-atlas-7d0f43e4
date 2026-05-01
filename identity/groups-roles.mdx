@@ -1,0 +1,110 @@
+---
+title: "Microsoft 365 Groups and Azure AD Roles Management"
+description: "Create, edit, and manage Microsoft 365 groups, security groups, distribution lists, and Azure AD roles across tenants. Deploy group templates at scale."
+---
+
+CIPP provides a unified view of every group in a tenant — Microsoft 365 groups, security groups, mail-enabled security groups, and distribution lists — along with Azure AD role assignments. You can create and edit groups, control message delivery and GAL visibility, save groups as reusable templates, and deploy those templates across multiple tenants in a single operation.
+
+## Groups
+
+Navigate to **Identity > Administration > Groups** to see all groups in the selected tenant.
+
+<Tabs>
+  <Tab title="Microsoft 365 groups">
+    Microsoft 365 groups (unified groups) underpin Teams, SharePoint sites, Planner boards, and shared mailboxes. In CIPP you can:
+
+    - View membership, description, visibility (public/private), mail nickname, and assigned licences.
+    - Edit name, description, membership type, and settings.
+    - **Create a Team from a group** — converts an existing M365 group into a Teams team with configurable member, messaging, and fun settings. The group must be at least 15 minutes old.
+    - Control whether the group appears in the Global Address List.
+    - Save the group as a reusable template for deployment to other tenants.
+  </Tab>
+  <Tab title="Security groups">
+    Security groups control access to resources and can be used in Conditional Access policies. In CIPP you can:
+
+    - View membership and on-premises sync status.
+    - Edit group properties.
+    - Set the source of authority — **Cloud Managed** or **On-Premises Managed**. Changes to on-premises managed groups take effect at the next directory sync cycle.
+    - Hide the group from the Global Address List.
+  </Tab>
+  <Tab title="Distribution lists">
+    Distribution lists and mail-enabled security groups route email to collections of recipients. In CIPP you can:
+
+    - Control delivery management: restrict messages to senders inside the organisation only, or allow external senders.
+    - Hide the group from the Global Address List.
+    - Edit group properties and membership.
+
+    <Note>
+    Delivery management and GAL visibility changes do not apply to groups synced from on-premises Active Directory. Those properties must be managed in AD and synced via Entra Connect.
+    </Note>
+  </Tab>
+</Tabs>
+
+### Adding a group
+
+Click **Add Group** from the Groups page. Select the group type, provide a display name and mail nickname, and configure membership settings. For dynamic groups, supply the membership rule expression.
+
+### Group actions
+
+Select any group to see the full list of available actions from the row menu or the side panel:
+
+- **View Group** — opens the group detail page showing members and settings.
+- **Edit Group** — modify display name, description, membership rules, and other settings.
+- **Set Global Address List Visibility** — show or hide the group from the GAL.
+- **Only allow messages from inside the organisation** — restricts the group to internal senders.
+- **Allow messages from inside and outside the organisation** — opens the group to external senders.
+- **Set Source of Authority** — switch between cloud-managed and on-premises-managed.
+- **Create template based on group** — saves the group's settings as a reusable group template.
+- **Create Team from Group** — (M365 groups only) promotes the group to a Teams team.
+- **Delete Group** — permanently removes the group.
+
+### Show members
+
+Click **Show Members** to expand the table with member data loaded for each group. This triggers a separate API call and may take longer for tenants with large group counts.
+
+## Group templates
+
+Group templates let you define a group configuration once and deploy it to any number of tenants. Navigate to **Identity > Administration > Group Templates**.
+
+<Steps>
+  <Step title="Create a template">
+    Click **Add Group Template** and fill in the display name, description, group type, membership rules, and any other properties. Alternatively, start from an existing group by selecting **Create template based on group** from the Groups page.
+  </Step>
+  <Step title="Edit or delete templates">
+    Use the **Edit Template** and **Delete Template** actions on any template row. If you have a GitHub integration configured, you can also **Save to GitHub** to commit the template to a community repository.
+  </Step>
+  <Step title="Deploy a template">
+    Click **Deploy Group Template** from either the Group Templates page or the Groups page. Select one or more templates and the tenants to deploy them to. CIPP creates the groups in each selected tenant.
+  </Step>
+</Steps>
+
+<Tip>
+Group templates are global — they are not tenant-specific. A single template can be deployed to your entire customer base in one operation, making them useful for standardising department or role groups.
+</Tip>
+
+## Azure AD roles
+
+Navigate to **Identity > Administration > Roles** to view the Azure AD directory roles assigned in the selected tenant. The table shows the role display name, description, and current members.
+
+<Note>
+The Roles page is currently read-only. To assign or remove role members, use the Just-in-Time admin feature under **Identity > Administration > JIT Admin**, which provides time-bounded role assignments with full audit trails. See [user management](/identity/users) for JIT admin setup.
+</Note>
+
+Role assignment data is sourced from the tenant's directory and reflects the current state of permanent role assignments. Eligible (PIM-managed) assignments are not shown in this view.
+
+## Related pages
+
+<CardGroup cols={2}>
+  <Card title="User management" icon="users" href="/identity/users">
+    Manage user accounts, JIT admin access, and vacation mode across tenants.
+  </Card>
+  <Card title="Offboarding wizard" icon="person-walking-arrow-right" href="/identity/offboarding">
+    Remove users from all groups as part of a structured offboarding process.
+  </Card>
+  <Card title="Tenant standards" icon="shield-check" href="/tenant/standards-baselines">
+    Apply group and policy standards across tenants using CIPP standards baselines.
+  </Card>
+  <Card title="Conditional access" icon="lock" href="/tenant/conditional-access">
+    Create and manage Conditional Access policies that reference groups for exclusions and targeting.
+  </Card>
+</CardGroup>

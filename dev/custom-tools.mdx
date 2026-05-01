@@ -1,0 +1,132 @@
+---
+title: "CIPP custom tools: breach lookup, tests, and diagnostics"
+description: "Reference for CIPP's built-in tools: breach lookup, custom tests, template library, community repos, Exchange cmdlets, and Application Insights diagnostics."
+---
+
+CIPP includes a set of utility tools that go beyond standard tenant administration. These tools are grouped under the **Tools** and **CIPP > Advanced** sections of the sidebar. They cover security research tasks like breach checking, extensibility features like custom tests and templates, and low-level diagnostic and Exchange access tools for advanced troubleshooting.
+
+<CardGroup cols={2}>
+  <Card title="Breach lookup" icon="magnifying-glass" href="/dev/custom-tools#breach-lookup">
+    Check whether an individual email address or domain has appeared in known data breaches using the Have I Been Pwned API.
+  </Card>
+  <Card title="Tenant breach lookup" icon="building" href="/dev/custom-tools#tenant-wide-breach-lookup">
+    Run a breach check against all users in a managed tenant at once.
+  </Card>
+  <Card title="Custom tests" icon="flask" href="/dev/custom-tools#custom-tests">
+    Write and manage PowerShell-based custom security tests that integrate with the CIPP assessment engine.
+  </Card>
+  <Card title="Template library" icon="book-open" href="/dev/custom-tools#template-library">
+    Sync Conditional Access, Intune, and other policy templates from a tenant or a community repository.
+  </Card>
+  <Card title="Community repos" icon="users" href="/dev/custom-tools#community-repos">
+    Browse and connect community-contributed GitHub repositories of CIPP templates and scripts.
+  </Card>
+  <Card title="Exchange cmdlets" icon="terminal" href="/dev/custom-tools#exchange-cmdlets">
+    Discover which Exchange Online cmdlets are available in a tenant and which management roles permit each one.
+  </Card>
+</CardGroup>
+
+## Breach lookup
+
+Navigate to **Tools > Breach Lookup** to check a single email address or domain name against the Have I Been Pwned (HIBP) breach database.
+
+Enter the email address or domain in the search field and click **Check**. CIPP calls `/api/ListBreachesAccount` and displays a card for each breach that matches, including:
+
+- The breach name and service logo
+- A description of the incident
+- The data classes exposed (email addresses, passwords, phone numbers, etc.)
+- A partial password sample if one is available in the breach dataset
+- Boolean flags indicating breach characteristics (verified, sensitive, retired, etc.)
+
+Results can be exported to CSV using the export button that appears when breaches are found.
+
+<Warning>
+  This tool is in beta. Results depend on HIBP API availability and may not reflect all known breaches for an address.
+</Warning>
+
+## Tenant-wide breach lookup
+
+Navigate to **Tools > Tenant Breach Lookup** to run a breach check across all users in a selected tenant. CIPP enumerates tenant users and queries the breach API for each address, presenting consolidated results in a single view. This is useful for security reviews where you need a full picture of credential exposure across a customer organization.
+
+## Custom tests
+
+Navigate to **Tools > Custom Tests** to create and manage your own security assessment tests. Custom tests are PowerShell scripts that integrate with the CIPP assessment engine and appear alongside built-in identity and device tests in assessments and the report builder.
+
+Each test record tracks:
+
+| Field | Description |
+|---|---|
+| `ScriptName` | Display name of the test |
+| `Description` | What the test checks |
+| `Enabled` | Whether the test runs during assessments |
+| `AlertOnFailure` | Whether a failure triggers a CIPP alert |
+| `ReturnType` | The format of the script's output |
+| `Category` / `Pillar` | Organizational grouping for the test |
+| `Risk` / `UserImpact` / `ImplementationEffort` | Remediation metadata |
+
+From the Custom Tests table you can add, edit, enable or disable, toggle alerting, and delete tests. Version history for each test script is accessible via **View Versions**.
+
+<Tip>
+  Custom tests appear as block options in the [report builder](/dev/report-builder), allowing you to include their results directly in generated PDF reports.
+</Tip>
+
+## Template library
+
+Navigate to **Tools > Template Library** to configure a template synchronization source. The template library keeps your CIPP policy templates up to date by pulling from a source tenant or a community GitHub repository on a schedule.
+
+- **Tenant-based sync** pulls Conditional Access, Intune configuration, compliance, and protection policies from a selected tenant. This sync runs every 4 hours.
+- **Community repository sync** pulls templates from a selected GitHub repository. This sync runs every 7 days.
+
+<Warning>
+  Enabling a template library source will overwrite any existing CIPP templates that share the same name. Review your existing templates before enabling sync.
+</Warning>
+
+Select either a tenant or a community repository (not both), then choose which template types to import. Click **Save** to schedule the sync job via `/api/AddScheduledItem`.
+
+## Community repos
+
+Navigate to **Tools > Community Repos** to browse community-contributed GitHub repositories of CIPP templates and scripts. From this page you can view repository details and connect a repo as a template library source. Community repos are fetched from `/api/ListCommunityRepos`.
+
+## Exchange cmdlets
+
+Navigate to **CIPP > Advanced > Exchange Cmdlets** to discover which Exchange Online PowerShell cmdlets are available in a tenant and which management roles are required to run each one.
+
+<Steps>
+  <Step title="Select a tenant">
+    Choose the tenant you want to inspect from the tenant selector.
+  </Step>
+  <Step title="Set context options">
+    Toggle **Compliance** to query the Security & Compliance PowerShell endpoint instead of Exchange Online. Toggle **As App** to query cmdlet availability in application context rather than delegated context.
+  </Step>
+  <Step title="Search for cmdlets">
+    Click **Search**. CIPP calls `/api/ListExoRequest` with `availableCmdlets: true` and returns a table of cmdlets available in the selected context.
+  </Step>
+  <Step title="Check management roles">
+    Click **Check Roles** on any cmdlet row to see which Exchange management roles are permitted to run that cmdlet. Results are fetched via `Get-ManagementRole` through the same endpoint.
+  </Step>
+</Steps>
+
+## Diagnostics
+
+Navigate to **CIPP > Advanced > Diagnostics** to query Application Insights telemetry from your CIPP backend. The diagnostics page surfaces three categories of events:
+
+- **CIPP.ConsoleLog** — Structured log messages from the Functions runtime, with severity levels (Error, Warning, Info, Debug, Verbose) and JSON parsing for structured payloads.
+- **CIPP.TaskCompleted** — Telemetry events emitted when a scheduled task finishes, including task name, command, tenant, execution count, and duration metrics.
+- **CIPP.StandardCompleted** — Telemetry events for standards enforcement runs, with the same metrics as task events.
+
+Use the filter bar to select a preset query or write a custom Application Insights KQL query. Results are displayed in a table; click any row to open a formatted detail view.
+
+<Note>
+  The diagnostics page requires that Application Insights is configured on your CIPP Function App. If Application Insights is not connected, the query will return no results.
+</Note>
+
+## Related pages
+
+<CardGroup cols={2}>
+  <Card title="Report builder" icon="chart-bar" href="/dev/report-builder">
+    Include custom test results and database data in generated PDF reports.
+  </Card>
+  <Card title="Scheduler" icon="clock" href="/dev/scheduler">
+    Template library sync and tenant breach scans are driven by the scheduler.
+  </Card>
+</CardGroup>

@@ -1,0 +1,145 @@
+---
+title: "Onboard your first tenants using the CIPP setup wizard"
+description: "Use the CIPP setup wizard to create an app registration, connect your partner tenant, and add customer tenants via GDAP or direct auth."
+---
+
+The CIPP setup wizard walks you through every step needed to connect CIPP to your Microsoft 365 environment. It handles creating the Azure AD application registration (called the SAM app), authenticating to your partner tenant, and onboarding customer tenants — either through Granular Delegated Admin Privileges (GDAP) or direct per-tenant authentication. You access the wizard from the **Setup Wizard** link in the CIPP navigation, or from the `/onboardingv2` route directly.
+
+<Info>
+  If this is your first time setting up CIPP, choose the **First Setup** option. It will walk through application creation, tenant connection, baseline configuration, and notification setup in a single guided flow.
+</Info>
+
+## Setup options
+
+The wizard opens with a selection screen offering five paths:
+
+| Option | When to use |
+|---|---|
+| **First Setup** | Initial CIPP deployment, or to redo the entire setup from scratch |
+| **Add a tenant** | Add a new customer tenant (GDAP or direct) after initial setup is complete |
+| **Create a new application registration** | Create and connect the SAM app registration only, without full first-run steps |
+| **Refresh Tokens** | Replace the authentication tokens for an existing application registration |
+| **Manually enter credentials** | Advanced: supply application ID, secret, refresh token, and tenant ID directly |
+
+## First setup flow
+
+The **First Setup** option runs through the complete initial configuration sequence.
+
+### Prerequisites
+
+Before starting the wizard, make sure the CIPP service account and its permissions are in place:
+
+- A dedicated **CIPP service account** in your partner tenant. This account must not be used for any other purpose.
+- The service account must have at minimum the **Application Administrator** and **User Administrator** Azure AD roles in your partner tenant.
+- **Multi-factor authentication** must be enabled for the service account, with no trusted location exclusions or Conditional Access bypasses.
+
+<Warning>
+  Do not use a global administrator account as the CIPP service account. Use a dedicated account with only the roles listed above. This limits the blast radius if credentials are ever compromised.
+</Warning>
+
+### Wizard steps
+
+<Steps>
+  <Step title="Select First Setup">
+    On the setup options screen, choose **First Setup** and click **Next**.
+  </Step>
+
+  <Step title="Create the SAM application registration">
+    CIPP needs an Azure AD application registration (the SAM app) to call Microsoft Graph on behalf of your tenants. Click **Authenticate with Microsoft** and sign in with your CIPP service account.
+
+    CIPP uses a device code flow — a code is displayed for you to enter at `microsoft.com/devicelogin`. Sign in with the service account credentials there.
+
+    Once authenticated, CIPP automatically calls `/api/ExecCreateSamApp` to create the application registration and store its credentials in your Key Vault. The step advances automatically when the app is created successfully.
+  </Step>
+
+  <Step title="Connect to your partner tenant">
+    On the **Tenants** step, click **Connect to Partner Tenant** and authenticate with your service account again. This stores a refresh token that CIPP uses to retrieve your full tenant list from Partner Center.
+
+    If you are not a Microsoft Partner, authenticate with your primary (home) tenant here. You can then add individual tenants using the **Connect to Separate Tenants** button on the same screen.
+
+    The current connected organization name and authenticated user are shown once the token is stored.
+  </Step>
+
+  <Step title="Configure baselines">
+    The **Baselines** step lets you select a set of security standards to apply to your tenants automatically after onboarding. You can skip this step and configure standards later from **Tenant Management > Standards & Baselines**.
+  </Step>
+
+  <Step title="Configure notifications">
+    The **Notifications** step lets you set up alert delivery — email, webhook, or PSA integration — so CIPP can notify you when standards drift or security events occur. You can also configure this later from **Settings > Notifications**.
+  </Step>
+
+  <Step title="Review next steps">
+    The final **Next Steps** screen confirms setup is complete and links to the areas of CIPP you will want to configure next.
+  </Step>
+</Steps>
+
+## Adding a tenant
+
+After initial setup, use the **Add a tenant** option in the wizard to onboard additional customer organizations. The wizard asks you to choose between **GDAP** and **Direct** tenant modes.
+
+### GDAP tenants
+
+GDAP (Granular Delegated Admin Privileges) is Microsoft's current recommended approach for partner-to-customer access. It replaces legacy Delegated Admin Privileges with a role-based model that limits what your partner account can do in each customer tenant.
+
+<Steps>
+  <Step title="Select GDAP as the tenant type">
+    Choose **Add a tenant**, then select **GDAP** on the tenant type screen.
+  </Step>
+
+  <Step title="Select a GDAP role template">
+    Choose the GDAP role template to use for this relationship. Role templates define which Azure AD directory roles are included in the GDAP relationship. If no templates exist, the wizard will offer to create the **CIPP Defaults** template, which includes the roles needed for full CIPP functionality.
+  </Step>
+
+  <Step title="Generate an invite URL">
+    Click **Generate Invite URL**. CIPP creates a GDAP relationship invite and returns a URL. Copy the URL and send it to the customer's **Global Administrator**.
+  </Step>
+
+  <Step title="Customer accepts the invite">
+    The customer's Global Administrator must open the invite URL and accept the GDAP relationship in their tenant. This step happens outside CIPP — you need to coordinate with your customer.
+
+    Once the customer has accepted, check the **"This invite has been accepted"** checkbox to advance the wizard.
+  </Step>
+
+  <Step title="Complete GDAP onboarding">
+    CIPP runs the post-acceptance onboarding steps, including assigning the correct security groups to the GDAP relationship roles so your service account has delegated access.
+  </Step>
+</Steps>
+
+### Direct tenants
+
+Direct tenant mode authenticates to each tenant individually rather than using a partner relationship. This is suited for standalone tenants or tenants where you have a user account directly.
+
+<Steps>
+  <Step title="Select Direct as the tenant type">
+    Choose **Add a tenant**, then select **Direct** on the tenant type screen.
+  </Step>
+
+  <Step title="Authenticate to the tenant">
+    Click **Connect to Separate Tenants** and authenticate with an account in the target tenant. CIPP stores a per-tenant refresh token, which it uses for all subsequent operations against that tenant.
+
+    You can repeat this step for each additional direct tenant you want to add.
+  </Step>
+</Steps>
+
+## Refreshing tokens
+
+If a refresh token expires or the service account password changes, use **Refresh Tokens** in the wizard to re-authenticate and replace the stored token.
+
+## Manually entering credentials
+
+The **Manually enter credentials** option lets advanced users supply an application ID, client secret, refresh token, and tenant ID directly. This is intended for scenarios where the automated SAM app creation flow is not available or a custom application registration is preferred.
+
+<Tip>
+  After onboarding tenants, verify that CIPP can access them by checking **Settings > Permissions**. The permissions page shows the status of Microsoft Graph permissions, GDAP roles, and tenant connectivity.
+</Tip>
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="Permissions" icon="shield-check" href="/setup/permissions">
+    Verify Graph permissions, GDAP roles, and tenant access after onboarding.
+  </Card>
+  <Card title="Standards and baselines" icon="list-check" href="/tenant/standards-baselines">
+    Configure security and compliance standards to enforce across your tenants.
+  </Card>
+</CardGroup>

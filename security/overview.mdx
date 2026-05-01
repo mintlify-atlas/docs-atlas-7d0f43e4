@@ -1,0 +1,108 @@
+---
+title: "Security monitoring and protection features in CIPP"
+description: "Overview of CIPP security features: Secure Score, risky users, Safe Links policies, Defender status, and security reports across all managed tenants."
+---
+
+CIPP centralizes security visibility across every tenant you manage, letting you monitor Microsoft Secure Score trends, review risky users, enforce Safe Links policies for Defender for Office 365, track Defender protection status, and generate compliance reports — all from a single pane of glass. Rather than logging into each tenant's security portal individually, you can identify gaps and act on them at scale directly from CIPP.
+
+## Security areas
+
+<CardGroup cols={2}>
+  <Card title="Microsoft Secure Score" icon="chart-line" href="/security/overview#microsoft-secure-score">
+    Review and improve each tenant's Secure Score with per-control remediation guidance and compliance framework mappings.
+  </Card>
+  <Card title="Defender and incidents" icon="shield" href="/security/defender-incidents">
+    View Defender protection status, manage incidents and alerts, configure Defender policies, and monitor software vulnerabilities across tenants.
+  </Card>
+  <Card title="Alerts and notifications" icon="bell" href="/security/alerts-notifications">
+    Configure CIPP's built-in alerting system with audit log triggers, scripted checks, and delivery via email, webhook, or PSA ticket.
+  </Card>
+  <Card title="Safe Links policies" icon="link" href="/security/overview#safe-links-policies">
+    Create and manage Defender for Office 365 Safe Links policies, including templates for consistent deployment across tenants.
+  </Card>
+</CardGroup>
+
+## Microsoft Secure Score
+
+Navigate to **Tenant > Administration > Secure Score** to view a tenant's current score, score history, and actionable recommendations.
+
+The dashboard shows:
+
+- **Current score** as a percentage of the maximum available score
+- **Comparison against all tenants** in the Microsoft benchmark dataset
+- **Comparison against similar tenants** of comparable size and industry
+- **Score over time** as an area chart to track improvement or regression
+
+Each recommendation card shows the control's description, remediation guidance, associated threats, and compliance framework mappings (such as NIST, ISO 27001, or SOC 2). You can filter recommendations by status — all, completed (100%), not started (0%), or in progress.
+
+### Updating control status
+
+When a control is handled by a third-party tool or you have accepted the risk, you can update its status without relying on Microsoft's automatic detection:
+
+- **Resolved by Third Party** — marks the control complete and awards the points
+- **Ignored / Risk Accepted** — marks the control complete but does not award points
+- **Default** — reverts to standard behavior where Microsoft detects completion
+
+A mandatory reason is required for any status change, providing an audit trail.
+
+<Note>
+The Secure Score overview is scoped to a single tenant. Switch to the **Table Overview** tab for a cross-tenant tabular view, or use the Best Practices report under **Endpoint > Reports** for an aggregated multi-tenant comparison.
+</Note>
+
+## Risky users
+
+CIPP surfaces risky users detected by Microsoft Entra ID Protection (formerly Azure AD Identity Protection). Risky user detection requires an Entra ID P2 license on the tenant.
+
+You can set up a **Scripted CIPP Alert** to notify you automatically when new risky users appear. See [Alerts and notifications](/security/alerts-notifications) for configuration details.
+
+<Tip>
+To respond to a risky user — such as requiring a password reset or blocking sign-in — navigate to **Identity > Users** and act directly from the user's detail panel.
+</Tip>
+
+## Safe Links policies
+
+Safe Links (part of Microsoft Defender for Office 365) rewrites URLs in emails and documents so they are scanned at click-time. CIPP provides full lifecycle management for Safe Links policies.
+
+Navigate to **Security > Safe Links > Safe Links Policies** to:
+
+- View all policies and their enabled/disabled state, priority, and configuration status
+- Create new policies with the **Add Safe Links Policy** button
+- Edit, enable, disable, set priority, or delete existing custom policies
+
+Built-in protection policies and preset security policies (Standard and Strict) are read-only and cannot be edited or deleted.
+
+### Safe Links policy settings
+
+When creating or editing a policy you can configure:
+
+| Setting | Description |
+|---|---|
+| Enable for email | Rewrite and scan URLs in email messages |
+| Enable for Teams | Rewrite URLs shared in Microsoft Teams |
+| Enable for Office | Scan URLs in Office desktop and web apps |
+| Track clicks | Log when users click rewritten URLs |
+| Scan URLs | Scan destination pages, not just the link |
+| Allow click-through | Permit users to proceed to blocked sites |
+| Enable for internal senders | Apply to mail sent within the organization |
+| Do not rewrite URLs | Bypass list for specific trusted URLs |
+
+### Safe Links templates
+
+Use **Security > Safe Links > Safe Links Templates** to save a policy configuration as a reusable template. Templates can then be deployed to multiple tenants through standards or applied directly. You can also create a template from an existing live policy using the **Create template based on policy** action in the policy list.
+
+## Security reports
+
+CIPP includes two security-focused reports under **Security > Reports**:
+
+**Device Compliance** — Lists all Entra ID devices with compliance status, managed state, trust type, last sign-in, and compliance expiry. Use this to identify non-compliant or unmanaged devices across a tenant.
+
+**MDE Onboarding Status** — Shows each tenant's Microsoft Defender for Endpoint onboarding state (enabled, available, unavailable, unresponsive, or not set up). In all-tenants mode this renders as a cross-tenant table. For a single tenant it shows a status card with a direct link to the MDE onboarding wizard in Microsoft Security Center if onboarding has not been completed.
+
+<CardGroup cols={2}>
+  <Card title="Defender and incidents" icon="shield-halved" href="/security/defender-incidents">
+    Manage Defender incidents, alerts, and endpoint policies.
+  </Card>
+  <Card title="Alerts and notifications" icon="bell-ring" href="/security/alerts-notifications">
+    Configure automated alerting and delivery for security events.
+  </Card>
+</CardGroup>

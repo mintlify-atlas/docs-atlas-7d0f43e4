@@ -1,0 +1,140 @@
+---
+title: "Enforce M365 standards and baselines across tenants"
+description: "Automate Microsoft 365 configuration policies with CIPP Standards: deploy templates, track compliance drift, run BPA reports, and analyse domain health."
+---
+
+CIPP Standards are automated configuration policies that you define once and enforce continuously across one or more Microsoft 365 tenants. Instead of manually verifying that each customer meets your security baseline, CIPP applies the standards on a schedule, reports on compliance status, and alerts you when configuration drifts away from the expected state. Templates let you group standards together and target them at specific tenants, groups of tenants, or your entire portfolio.
+
+## How standards work
+
+Each standard represents a specific configuration item — for example, requiring MFA for all users, enabling audit log collection, or setting a particular password policy. You assemble standards into a **template** and assign that template to one or more tenants. CIPP then:
+
+1. Runs the template on the configured schedule (or on demand).
+2. Compares the current tenant configuration against the expected values.
+3. Reports compliance status per tenant and per standard.
+4. Optionally remediates non-compliant settings automatically, depending on the standard's remediation capability.
+
+There are two template types:
+
+- **Classic templates** — apply a fixed desired configuration and remediate drift back to the expected values.
+- **Drift templates** — capture the current state of a tenant as the baseline and alert when it changes, without forcing a specific value.
+
+## Standards & drift alignment
+
+The **Standard & Drift Alignment** page at **Tenant → Standards → Standard & Drift Alignment** is your cross-tenant compliance dashboard. It shows how well every tenant in your portfolio matches its assigned templates.
+
+You can toggle between two views:
+
+- **Summary view** — one row per tenant-template combination, with an alignment score and a breakdown of license-missing items. Use this to quickly identify tenants that are significantly out of compliance.
+- **Per Standard view** — one row per individual standard per tenant, with a compliance status label. Use this for granular investigation.
+
+Compliance statuses in per-standard view:
+
+| Status | Meaning |
+|---|---|
+| Compliant | The setting matches the expected value |
+| Non-Compliant | The setting differs from the expected value |
+| Accepted Deviation | A deliberate exception has been recorded |
+| Customer Specific | The setting is unique to this tenant and tracked separately |
+| License Missing | The tenant lacks the license required for this standard |
+
+From a row you can **View Tenant Report** to see the full applied-standards report for that tenant, **Edit Template** to adjust the standard's expected values, or **Manage Drift** (drift templates only) to review what changed and record accepted deviations.
+
+## Standards templates
+
+Manage your templates at **Tenant → Standards → Templates**.
+
+<Steps>
+  <Step title="Create a template">
+    Click **Add Template** to open the template editor. Give the template a name, select the tenants (or tenant groups) it should target, and configure the schedule.
+
+    To create a drift template instead — one that alerts on changes rather than enforcing a fixed configuration — click **Create Drift Template**.
+  </Step>
+  <Step title="Add standards to the template">
+    Inside the template editor, browse available standards and enable the ones you want. Each standard has individual settings you can configure (for example, which MFA methods are acceptable, or what the minimum password length should be).
+  </Step>
+  <Step title="Assign tenants">
+    Use the tenant picker to assign the template to specific tenants. You can also use tenant groups so that new tenants added to a group automatically inherit the template.
+  </Step>
+  <Step title="Run the template">
+    Save the template. CIPP runs it automatically on schedule. To run it immediately, use **Run Template Now** from the template row actions — either for the currently selected tenant or for all tenants assigned to the template.
+  </Step>
+</Steps>
+
+<Tip>
+Clone an existing template with **Clone & Edit Template** to create a variant without starting from scratch. You can also create a **Drift Clone** of a classic template to build a parallel drift baseline from the same standard set.
+</Tip>
+
+## Best Practice Analyser (BPA)
+
+The Best Practice Analyser at **Tenant → Standards → BPA Reports** runs customisable report templates across tenants and presents the results in a formatted view. BPA reports are useful for:
+
+- Delivering compliance snapshots to customers
+- Auditing configuration before onboarding a new tenant
+- Running scheduled health checks on your portfolio
+
+Each BPA template defines which data points to collect and how to display them. You can **Create**, **Edit**, **Clone**, or **Delete** templates, and **Force Sync** to refresh the underlying data immediately.
+
+BPA templates can be saved to a connected GitHub repository for version control and sharing across teams.
+
+<Note>
+BPA reports complement — rather than replace — Standards templates. Standards enforce and remediate; BPA reports observe and present. Use both for a complete governance picture.
+</Note>
+
+## Domains analyser
+
+The Domains Analyser at **Tenant → Standards → Domains Analyser** checks the email and DNS health of every domain registered across your managed tenants. For each domain it reports:
+
+| Field | What it checks |
+|---|---|
+| Score percentage | Overall health score |
+| Mail provider | Detected email service |
+| SPF pass | Whether SPF is correctly configured and passes |
+| MX pass | Whether MX records are present and correct |
+| DMARC present | Whether a DMARC record exists |
+| DMARC action policy | The DMARC enforcement level (none/quarantine/reject) |
+| DNSSEC present | Whether DNSSEC is enabled on the domain |
+| DKIM enabled | Whether DKIM signing is configured |
+| Enterprise Enrollment / Registration | MDM auto-enrolment readiness |
+
+From the analyser you can:
+
+- Add or modify DKIM selectors for a domain
+- Remove a domain from the analyser
+- Drill into a domain to see its full DNS card
+- Check an individual domain on demand
+- Trigger a full analysis run across all tenant domains
+
+<Tip>
+Use **Check Individual Domain** to investigate a specific domain outside your tenant portfolio, for example to validate a domain before migration.
+</Tip>
+
+## Frequently asked questions
+
+<AccordionGroup>
+  <Accordion title="How often do standards run?">
+    The run schedule is configured per template when you create or edit it. You can also trigger an immediate run from the template list using **Run Template Now**. CIPP processes templates as background jobs, so the run time depends on the number of tenants and standards in scope.
+  </Accordion>
+  <Accordion title="What happens if a standard cannot be applied because of a missing license?">
+    CIPP records the compliance status as **License Missing** and skips remediation for that standard on that tenant. No error is raised. You can filter the alignment view by this status to see which tenants need licensing upgrades to fully comply.
+  </Accordion>
+  <Accordion title="What is the difference between a classic template and a drift template?">
+    A classic template enforces a specific desired configuration and remediates non-compliant settings. A drift template captures the current state of a tenant and alerts when anything changes — it does not enforce a fixed value. Drift templates are useful for detecting unexpected changes in production environments.
+  </Accordion>
+  <Accordion title="Can I exclude specific tenants from a template?">
+    Yes. The template editor includes an excluded tenants field. Tenants listed there are skipped during template runs, even if they are also listed in the target tenants field or belong to an included tenant group.
+  </Accordion>
+  <Accordion title="What is an accepted deviation?">
+    An accepted deviation is a deliberate exception you record for a specific tenant-standard combination. For example, a customer may have a legitimate business reason to use a non-standard authentication method. Recording an accepted deviation stops CIPP from continuing to flag the item as non-compliant and suppresses alerts for that configuration.
+  </Accordion>
+  <Accordion title="Can I import standards templates from a community repository?">
+    Yes. Use the **Browse Catalog** button on the Templates page to import templates from a connected community or GitHub repository. This makes it easy to adopt community-published baselines or share your own templates with other CIPP users.
+  </Accordion>
+</AccordionGroup>
+
+## Related pages
+
+- [Tenant overview](/tenant/overview)
+- [Conditional Access](/tenant/conditional-access)
+- [Security overview](/security/overview)
+- [Settings: notifications & SIEM](/settings/notifications-siem)

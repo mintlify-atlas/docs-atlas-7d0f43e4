@@ -1,0 +1,149 @@
+---
+title: "Set up CIPP alert notifications and SIEM log access"
+description: "Configure email, webhook, and PSA notifications for CIPP alerts. Generate SAS tokens to forward CIPP logs to your SIEM or log analytics platform."
+---
+
+CIPP can push alert notifications to email addresses, webhook endpoints (including Microsoft Teams incoming webhooks and custom REST endpoints), and connected PSA/ticketing integrations. In parallel, the SIEM settings page lets you generate a read-only SAS token for the CIPP Logs table in Azure Storage, so external tools — such as Splunk, Elastic, Microsoft Sentinel, or custom scripts — can query log data directly.
+
+## Notification channels
+
+CIPP supports three delivery paths for alerts, all configured from **Settings → Notifications**:
+
+| Channel | How it works |
+|---|---|
+| **Email** | CIPP sends a notification email to one or more addresses. Emails are batched and sent on an hourly schedule. |
+| **Webhook** | CIPP POSTs a JSON payload to any URL you provide. Supports authentication (Bearer token, Basic Auth, API Key, or custom headers) and optionally a standardised schema. |
+| **PSA / ticketing integration** | When **Send to integration** is enabled, CIPP forwards alerts to your connected PSA (e.g. HaloPSA). See [Integrations](/settings/integrations) for setup. |
+
+## Setting up email notifications
+
+<Steps>
+  <Step title="Open notification settings">
+    Navigate to **Settings → Notifications** in the CIPP sidebar.
+  </Step>
+  <Step title="Enter email addresses">
+    In the **Email Addresses** field, enter one or more email addresses separated by commas. These receive all notifications that match the filters you configure below.
+  </Step>
+  <Step title="Choose log types">
+    In the **Choose which logs you would like to receive alerts from** field, select one or more log types. Available log types include:
+
+    - Updates Status
+    - All Standards
+    - Token Events
+    - Adding or editing users, groups, or tenants
+    - Executing the offboard wizard
+    - Adding autopilot devices or applications
+    - Editing DNS settings or excluded licenses
+  </Step>
+  <Step title="Choose severity levels">
+    In the **Severity** field, select which severity levels trigger a notification. Options are **Alert**, **Error**, **Info**, **Warning**, and **Critical**. You can select multiple levels.
+  </Step>
+  <Step title="Configure delivery options">
+    - Enable **Receive one email per tenant** to send a separate notification for each tenant that generates an alert, rather than grouping all tenants into one email.
+    - Enable **Send to integration** to also forward alerts to your connected PSA.
+  </Step>
+  <Step title="Save and test">
+    Click **Save** to store the configuration. Then click **Send Test Alert** to verify delivery. In the test dialog you can choose to write to the logbook, send an email immediately, send a webhook immediately, or send to your PSA immediately — independently of the hourly batch schedule.
+  </Step>
+</Steps>
+
+<Note>
+Email notifications are sent on an approximately hourly schedule, not in real time. Use the **Send Test Alert** dialog with **Send Email Now** enabled to confirm delivery without waiting for the next batch run.
+</Note>
+
+## Configuring a webhook
+
+In the **Webhook URL** field, enter the URL of the endpoint that should receive notifications. This can be a Microsoft Teams incoming webhook URL, a Logic Apps / Power Automate HTTP trigger, or any custom REST endpoint.
+
+### Authentication
+
+Select an authentication type from the **Webhook Endpoint Authentication** dropdown:
+
+<AccordionGroup>
+  <Accordion title="None">
+    No authentication header is added. Suitable for endpoints that use IP allowlisting or shared secrets in the URL itself.
+  </Accordion>
+  <Accordion title="Bearer Token">
+    CIPP adds an `Authorization: Bearer <token>` header to each request. Enter your token in the **Webhook Bearer Token** field.
+  </Accordion>
+  <Accordion title="Basic Auth">
+    CIPP adds a Base64-encoded `Authorization: Basic <credentials>` header. Enter a **username** and **password**.
+  </Accordion>
+  <Accordion title="API Key Header">
+    CIPP adds a custom header with the key name and value you specify. Enter the **header name** (e.g. `x-api-key`) and **header value**.
+  </Accordion>
+  <Accordion title="Custom Headers (JSON)">
+    Provide a JSON object of arbitrary headers, for example:
+    ```json
+    {"Authorization": "Bearer my-token", "x-custom-header": "value"}
+    ```
+  </Accordion>
+</AccordionGroup>
+
+### Standardised schema
+
+Enable **Use Standardised Alert Schema** to have CIPP send a consistent JSON structure for all alert types, regardless of their source. This makes it easier to build Power Automate flows, Logic Apps, or Sentinel analytics rules that parse CIPP alerts. This option is disabled by default for backwards compatibility.
+
+<Tip>
+Teams incoming webhooks work with the default (non-standardised) schema. If you are routing alerts to Sentinel or Elastic, enable the standardised schema for cleaner field mapping.
+</Tip>
+
+## SIEM log access
+
+Navigate to **Settings → SIEM** to generate a read-only SAS (Shared Access Signature) token for the `CippLogs` Azure Table Storage table. This lets external SIEM tools query CIPP log data using the Azure Table Storage REST API.
+
+### Generating a SAS token
+
+1. Select a **Token Validity** period (30 days to 10 years). You can also enter a custom number of days.
+2. Click **Generate SAS Token**.
+3. Copy the generated **SAS URL** immediately — it is only shown once. The expiry date is displayed alongside it.
+
+<Warning>
+Generating a new SAS URL does **not** invalidate previous URLs. If a SAS URL is compromised, contact your Azure administrator to rotate the storage account key, which will invalidate all existing SAS tokens for that account.
+</Warning>
+
+### Log table structure
+
+CIPP writes all activity to the `CippLogs` table. Each row has the following columns:
+
+| Column | Description |
+|---|---|
+| `PartitionKey` | Date in `YYYYMMDD` format (UTC). Used for efficient date-range queries. |
+| `RowKey` | Unique GUID for each log entry. |
+| `Timestamp` | When the entry was written. |
+| `Tenant` | Tenant domain name. |
+| `Username` | The CIPP user who triggered the action. |
+| `API` | The API endpoint or function name. |
+| `Message` | The log message text. |
+| `Severity` | Log level: `Info`, `Warning`, `Error`, or `Debug`. |
+| `LogData` | Additional JSON payload, if any. |
+| `TenantID` | Tenant GUID, when available. |
+| `IP` | Source IP address, when available. |
+
+### Querying logs
+
+Append `&$filter=` to your SAS URL to filter results. Always include a `PartitionKey` filter — without one, Azure Table Storage performs a full table scan, which is slow and costly on large tables.
+
+Example filters:
+
+```text
+# Single day
+$filter=PartitionKey eq '20260401'
+
+# Date range
+$filter=PartitionKey ge '20260325' and PartitionKey le '20260401'
+
+# Errors only on a specific day
+$filter=PartitionKey eq '20260401' and Severity eq 'Error'
+```
+
+<Note>
+All timestamps in the `CippLogs` table are in UTC. If your timezone is behind UTC, a log entry that appears on April 1 in your local time may be stored under the April 2 partition key. Use a one-day buffer at each end of your date range to avoid missing entries.
+</Note>
+
+## Related pages
+
+- [Backend & Permissions](/settings/backend-permissions) — verify SAM application permissions and manage tenants
+- [Integrations](/settings/integrations) — connect PSA and ticketing tools to receive alert notifications
+- [Security alerts & notifications](/security/alerts-notifications) — tenant-level security alerting
+- [Scheduler](/dev/scheduler) — how CIPP processes scheduled tasks, including notification batches

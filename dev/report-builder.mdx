@@ -1,0 +1,79 @@
+---
+title: "Build and schedule custom M365 reports in CIPP"
+description: "CIPP's report builder lets you create, save, and run custom data reports across any tenant using reusable templates and multiple export formats."
+---
+
+CIPP includes a built-in report builder that lets you query Microsoft 365 data across your managed tenants and produce custom reports without writing any code. You can design report templates once and run them on demand against any tenant, then export results to CSV or PDF.
+
+## Report builder overview
+
+The report builder is available under **Tools > Report Builder** and has three main areas:
+
+- **Builder** — drag-and-drop interface for designing a new report
+- **Templates** — saved report templates you can reuse and share
+- **Generated Reports** — history of previously run reports with download links
+
+## Creating a custom report
+
+<Steps>
+  <Step title="Open the report builder">
+    Navigate to **Tools > Report Builder** and click **Create New Report** to open the builder interface.
+  </Step>
+  <Step title="Select a data source">
+    Choose the Microsoft 365 data source to query — for example, users, mailboxes, devices, or sign-in logs. The available sources reflect the APIs CIPP can query on your behalf.
+  </Step>
+  <Step title="Configure columns and filters">
+    Select which fields to include as columns in your report. Apply filters to narrow results — for example, filter by department, license assignment, or last sign-in date.
+  </Step>
+  <Step title="Choose target tenants">
+    Select one or more tenants to run the report against. You can target all tenants, a specific group, or an individual tenant.
+  </Step>
+  <Step title="Save as template (optional)">
+    Give your report a name and save it as a reusable template. Saved templates appear under **Templates** and can be shared with other CIPP users.
+  </Step>
+  <Step title="Run and export">
+    Click **Run Report** to generate results. Once complete, the report appears in **Generated Reports** where you can view it in-browser or download it as CSV or PDF.
+  </Step>
+</Steps>
+
+## Report templates
+
+Templates let you standardize reporting across your organization. A saved template stores the data source, column selection, and filter configuration so anyone can run the same report with a single click.
+
+<CardGroup cols={2}>
+  <Card title="Save templates" icon="floppy-disk">
+    Save any configured report as a named template for future reuse.
+  </Card>
+  <Card title="Share templates" icon="share-nodes">
+    Templates are available to all CIPP users in your deployment.
+  </Card>
+  <Card title="Edit and clone" icon="copy">
+    Modify existing templates or clone them as a starting point for new reports.
+  </Card>
+  <Card title="Delete templates" icon="trash">
+    Remove templates that are no longer needed from the Templates list.
+  </Card>
+</CardGroup>
+
+## Generated reports
+
+Every report run is stored in **Generated Reports**, giving you a history of past results. This is useful for audits, compliance reviews, and trend comparisons over time.
+
+- View results inline in the CIPP table view
+- Download as CSV for use in Excel or other tools
+- Export as PDF for executive or compliance reporting
+
+<Tip>
+  Use the **Scheduler** to automate recurring reports. Configure a scheduled task to run a report template on a daily or weekly cadence and deliver results via email notification. See [Scheduler](/dev/scheduler) for details.
+</Tip>
+
+## Related pages
+
+<CardGroup cols={2}>
+  <Card title="Scheduler" icon="calendar" href="/dev/scheduler">
+    Automate reports to run on a recurring schedule.
+  </Card>
+  <Card title="Custom Tools" icon="wrench" href="/dev/custom-tools">
+    Explore other tools including breach lookup and template library.
+  </Card>
+</CardGroup>

@@ -1,0 +1,131 @@
+---
+title: "Deploy CIPP to Azure with the ARM deployment template"
+description: "Step-by-step guide to provisioning the CIPP Azure Static Web App frontend and Azure Functions backend using the included deployment template."
+---
+
+CIPP runs entirely in your own Azure subscription. The frontend is an **Azure Static Web App** that serves the React-based UI, and the backend is an **Azure Functions** app (PowerShell runtime) that handles all Microsoft 365 API calls. A **Key Vault** stores your application credentials, and a **Storage Account** provides durable state for the function app. The included `AzureDeploymentTemplate.json` provisions all of these resources in a single deployment, wiring them together automatically.
+
+## Prerequisites
+
+Before you deploy, make sure you have the following in place.
+
+- An **Azure subscription** where you have at minimum Contributor access to a resource group
+- A **Microsoft Partner account** (CSP or MCA-E) if you intend to manage customer tenants via GDAP or Delegated Admin — CIPP also works without a partner relationship for direct single-tenant use
+- A **GitHub account** and a fork of [https://github.com/KelvinTegelaar/CIPP](https://github.com/KelvinTegelaar/CIPP) for the Static Web App deployment
+- A **GitHub personal access token** with `repo` and `workflow` scopes, used by the ARM template to link the Static Web App to your fork
+- **Node.js 22 or later** if you plan to run the frontend locally for development
+
+<Warning>
+  Deploy CIPP into a dedicated resource group. The ARM template assigns the Function App's managed identity the Contributor role on the resource group it is deployed into. Using an existing resource group that contains other workloads will grant CIPP's managed identity access to those resources.
+</Warning>
+
+## Architecture overview
+
+```
+┌────────────────────────────────────────────┐
+│            Azure Subscription              │
+│                                            │
+│  ┌──────────────────┐  ┌────────────────┐  │
+│  │  Static Web App  │  │  Function App  │  │
+│  │  (React UI)      │──│  (PowerShell)  │  │
+│  └──────────────────┘  └───────┬────────┘  │
+│                                │            │
+│                        ┌───────▼────────┐  │
+│                        │   Key Vault    │  │
+│                        │  (credentials) │  │
+│                        └────────────────┘  │
+└────────────────────────────────────────────┘
+```
+
+The Static Web App is linked to the Function App as a "user-provided function app", so API requests from the frontend route directly to your own backend. The Function App uses a system-assigned managed identity to read secrets from Key Vault.
+
+## Deployment steps
+
+<Steps>
+  <Step title="Fork the CIPP repository">
+    Go to [https://github.com/KelvinTegelaar/CIPP](https://github.com/KelvinTegelaar/CIPP) and fork it to your GitHub account. The ARM template will point the Static Web App at this fork so Azure can build and deploy the frontend automatically.
+  </Step>
+
+  <Step title="Create a GitHub personal access token">
+    In GitHub, go to **Settings > Developer settings > Personal access tokens** and generate a token with the `repo` and `workflow` scopes. Copy the token — you will need it during ARM template deployment.
+  </Step>
+
+  <Step title="Create a dedicated Azure resource group">
+    In the Azure Portal, create a new resource group in the region closest to you. Note the resource group name; you will deploy the ARM template into it.
+
+    ```bash
+    az group create --name rg-cipp --location eastus
+    ```
+  </Step>
+
+  <Step title="Deploy the ARM template">
+    In the Azure Portal, search for **Deploy a custom template**, then select **Build your own template in the editor**. Paste or upload the contents of `deployment/AzureDeploymentTemplate.json` from your fork.
+
+    Alternatively, deploy from the Azure CLI:
+
+    ```bash
+    az deployment group create \
+      --resource-group rg-cipp \
+      --template-file deployment/AzureDeploymentTemplate.json \
+      --parameters \
+          baseName=CIPP \
+          GithubRepository=https://github.com/<your-username>/CIPP \
+          GithubToken=<your-github-token>
+    ```
+
+    The template accepts three parameters:
+
+    | Parameter | Default | Description |
+    |---|---|---|
+    | `baseName` | `CIPP` | Prefix used to name all Azure resources |
+    | `GithubRepository` | CIPP upstream repo | URL of your GitHub fork |
+    | `GithubToken` | — | GitHub personal access token for Static Web App CI/CD |
+
+  </Step>
+
+  <Step title="Wait for the deployment to complete">
+    The ARM template provisions the following resources in order:
+
+    - Storage Account (for the Function App)
+    - App Service Plan (Consumption / Dynamic tier)
+    - Function App (PowerShell 7.4 runtime) with a system-assigned managed identity
+    - Key Vault with placeholder secrets and access policy for the Function App
+    - Static Web App (Standard tier) linked to your GitHub fork
+    - Role assignment: Function App managed identity is given Contributor on the resource group
+
+    The initial GitHub Actions build of the frontend can take 5–10 minutes after the Static Web App resource is created.
+  </Step>
+
+  <Step title="Retrieve your CIPP URL">
+    Once the deployment finishes, open the **Static Web App** resource in the Azure Portal. The **URL** field on the overview page is your CIPP address. Open it in a browser to confirm the UI loads.
+  </Step>
+</Steps>
+
+## What gets deployed
+
+The template creates these Azure resources inside your resource group:
+
+| Resource | Type | Purpose |
+|---|---|---|
+| `<baseName><suffix>` | Key Vault | Stores `applicationid`, `applicationsecret`, `refreshtoken`, and `tenantid` secrets |
+| `<baseName><suffix>` | Function App | PowerShell backend for all M365 API operations |
+| `<baseName>-srv-<suffix>` | App Service Plan | Consumption plan hosting the Function App |
+| `<baseName>stg<suffix>` | Storage Account | Durable state and job queue for the Function App |
+| `<baseName>-swa-<suffix>` | Static Web App | Hosts and builds the React frontend from your GitHub fork |
+
+<Tip>
+  After deployment, go to **Settings > Backend** inside CIPP to find direct links to each of these resources in the Azure Portal. You can use these links to monitor performance, view logs, manage CI/CD, and configure Function App settings without navigating the Azure Portal manually.
+</Tip>
+
+## Next steps
+
+With the infrastructure in place, run the setup wizard to create your application registration and connect your tenants.
+
+<CardGroup cols={2}>
+  <Card title="Onboard tenants" icon="building" href="/setup/onboarding">
+    Run the CIPP setup wizard to create the SAM app registration and connect customer tenants.
+  </Card>
+  <Card title="Permissions" icon="shield-check" href="/setup/permissions">
+    Verify that your application has the correct Microsoft Graph and GDAP permissions.
+  </Card>
+</CardGroup>

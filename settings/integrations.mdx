@@ -1,0 +1,121 @@
+---
+title: "Connect CIPP to PSA, documentation, and billing tools"
+description: "Connect CIPP to PSA tools, documentation platforms, billing, and security services. Configure credentials, map tenants, and sync data to third-party tools."
+---
+
+CIPP's integration hub connects your Microsoft 365 management workflows to the third-party tools your team already uses. From the **Integrations** page you can enable PSA ticketing, sync documentation, manage CSP licensing through distributors, push password links instead of plain text, scan for compromised credentials, and expose CIPP data through a REST API. Each integration is self-contained — you configure credentials, map tenants, and define field mappings independently without affecting other parts of CIPP.
+
+## Available integrations
+
+<CardGroup cols={2}>
+  <Card title="CIPP API" icon="code" href="/dev/api-reference">
+    Expose CIPP functionality through a REST API. Create API clients, manage scopes, and integrate CIPP data into custom scripts or external dashboards.
+  </Card>
+  <Card title="Sherweb" icon="building" href="/settings/integrations">
+    Manage CSP licensing through Sherweb directly from CIPP. Requires tenant mapping to associate CIPP tenants with Sherweb customer accounts.
+  </Card>
+  <Card title="Gradient" icon="chart-line" href="/settings/integrations">
+    Send license counts to Gradient and optionally create tickets when usage changes. Supports force sync to push data on demand.
+  </Card>
+  <Card title="Halo PSA" icon="ticket" href="/settings/integrations">
+    Forward CIPP alerts to Halo PSA as tickets. Requires tenant mapping to route alerts to the correct customer in your PSA.
+  </Card>
+  <Card title="NinjaOne" icon="display" href="/settings/integrations">
+    Sync Microsoft 365 documentation to NinjaOne and monitor device compliance. Supports tenant mapping and field mapping for custom data structures. Force sync available.
+  </Card>
+  <Card title="Hudu" icon="book" href="/settings/integrations">
+    Push Microsoft 365 tenant documentation to Hudu. Supports tenant mapping and field mapping to control which data lands in which Hudu asset fields. Force sync available.
+  </Card>
+  <Card title="PasswordPusher" icon="lock" href="/settings/integrations">
+    Route generated passwords through PasswordPusher to produce time-limited, self-destructing links instead of plain text. Works with the CIPP password reset workflow.
+  </Card>
+  <Card title="Have I Been Pwned" icon="shield-halved" href="/settings/integrations">
+    Scan tenants for email addresses found in known data breaches using the HIBP API. Requires an HIBP API key.
+  </Card>
+  <Card title="CloudFlare ZTNA Tunnel" icon="cloud" href="/settings/integrations">
+    Supply CloudFlare Zero Trust Network Access credentials for use by other integrations that route traffic through a CFZTNA tunnel.
+  </Card>
+  <Card title="GitHub" icon="github" href="/settings/integrations">
+    Connect a GitHub account to manage repositories and source control workflows from within CIPP.
+  </Card>
+</CardGroup>
+
+## Configuring an integration
+
+All integrations follow the same configuration flow. Navigate to **Integrations**, then click the card for the integration you want to configure.
+
+<Steps>
+  <Step title="Open the integration settings">
+    Click the integration card. You are taken to the integration configuration page, which shows a description and any relevant links to the vendor's documentation.
+  </Step>
+  <Step title="Enter credentials">
+    On the **Settings** tab, fill in the required fields — typically an API key, client ID, client secret, or base URL. Required fields vary by integration and are labelled accordingly.
+
+    Toggle **Enabled** (where present) to activate the integration once credentials are saved. The integration status on the overview page will switch from **Unconfigured** or **Disabled** to **Enabled**.
+  </Step>
+  <Step title="Test the connection">
+    Click **Test** to verify that CIPP can authenticate with the third-party service using the credentials you provided. Test results appear inline on the page.
+
+    <Note>
+    The **Test** button is disabled until the integration is enabled and credentials are saved. If the test fails, double-check the credentials and ensure the API key or app has the necessary permissions in the vendor's platform.
+    </Note>
+  </Step>
+  <Step title="Map tenants (if required)">
+    Integrations that sync data per-tenant (Sherweb, HaloPSA, NinjaOne, Hudu) include a **Tenant Mapping** tab. Use this tab to associate each CIPP-managed tenant with the corresponding customer record in the third-party system.
+
+    The **Tenant Mapping** tab is disabled until the integration is enabled.
+  </Step>
+  <Step title="Configure field mapping (if available)">
+    NinjaOne and Hudu support a **Field Mapping** tab where you can control which Microsoft 365 data fields map to which documentation fields in the target system. This is useful when your vendor has a custom schema or you want to control exactly what data is synchronised.
+  </Step>
+  <Step title="Force sync (if available)">
+    For integrations that support it (Gradient, NinjaOne, Hudu), click **Force Sync** to trigger an immediate data push outside of the normal scheduled sync cycle.
+  </Step>
+</Steps>
+
+## Integration status
+
+The integration overview page shows a status indicator next to each integration name:
+
+| Status | Meaning |
+|---|---|
+| **Enabled** | The integration is configured and active. |
+| **Disabled** | Credentials are saved but the integration has been turned off. |
+| **Unconfigured** | No credentials have been entered yet. |
+
+## Integration sync jobs
+
+Navigate to **Integrations → Sync Jobs** to see the history and schedule of all integration sync tasks. The table shows:
+
+- **Tenant** — which tenant the sync ran for.
+- **SyncType** — the type of data being synced.
+- **Task** — the specific task name.
+- **ScheduledTime** / **ExecutedTime** — when the task was scheduled and when it actually ran.
+- **LastRun** — the relative time of the last successful run.
+- **RepeatsEvery** — the sync frequency.
+- **Results** — outcome of the last run (success, error, or a message).
+
+Use the Sync Jobs page to confirm that regular syncs are completing successfully and to identify any integrations that are failing silently.
+
+## CIPP API integration
+
+The CIPP API integration is unique — it does not connect to an external third-party service. Instead, it enables external systems to call CIPP via a REST API. The **Settings** tab for CIPP API is replaced by an **API Client Management** interface where you can create and revoke API clients.
+
+<Tip>
+See [API Reference](/dev/api-reference) for the full CIPP API documentation, including available endpoints, authentication, and example requests.
+</Tip>
+
+## What integrations can and cannot do
+
+Integrations extend CIPP's outbound data flow — they push data from CIPP to third-party systems or allow external systems to pull data from CIPP. They do not grant external systems the ability to modify Microsoft 365 tenant data directly; all write operations still go through CIPP's permission model.
+
+<Warning>
+Credentials for integrations are stored in your CIPP deployment's Azure Key Vault. Ensure that Key Vault access is restricted to authorised CIPP personnel and that you rotate API keys when team members leave.
+</Warning>
+
+## Related pages
+
+- [API Reference](/dev/api-reference) — CIPP API endpoint documentation
+- [Notifications & SIEM](/settings/notifications-siem) — send CIPP alerts to your PSA or webhook
+- [Backend & Permissions](/settings/backend-permissions) — manage the CIPP SAM application and Azure resources
+- [Scheduler](/dev/scheduler) — how CIPP schedules and runs integration sync tasks

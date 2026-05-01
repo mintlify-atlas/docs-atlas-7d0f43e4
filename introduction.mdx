@@ -1,0 +1,63 @@
+---
+title: "CIPP: Microsoft 365 Partner Management Platform"
+description: "CIPP is an open-source Microsoft 365 multitenant management portal for MSPs and Microsoft Partners to administer all client tenants from one place."
+---
+
+CIPP (CyberDrain Improved Partner Portal) is an open-source Microsoft 365 management platform built for Managed Service Providers and Microsoft Partners. The standard Microsoft partner tooling makes multitenant administration slow and fragmented — CIPP replaces that with a single portal where you can manage users, enforce security baselines, handle email, configure devices, and monitor security across every client tenant you support. The goal is straightforward: remove the daily gripes of partner management and save several hours per engineer each month.
+
+<CardGroup cols={2}>
+  <Card title="Tenant administration" icon="building-columns" href="/tenant/overview">
+    Manage domains, subscriptions, audit logs, and partner relationships across all your client organizations.
+  </Card>
+  <Card title="Identity and users" icon="users" href="/identity/users">
+    Create, modify, license, and offboard users and groups in any tenant without switching portals.
+  </Card>
+  <Card title="Standards and baselines" icon="list-check" href="/tenant/standards-baselines">
+    Define security and compliance standards once, then enforce them automatically across every managed tenant.
+  </Card>
+  <Card title="GDAP management" icon="shield-halved" href="/tenant/gdap-management">
+    Onboard tenants using Granular Delegated Admin Privileges and manage relationship lifecycles at scale.
+  </Card>
+  <Card title="Email and Exchange" icon="envelope" href="/email/mailboxes">
+    Administer mailboxes, transport rules, spam filters, shared mailboxes, and distribution lists.
+  </Card>
+  <Card title="Endpoint and Intune" icon="laptop" href="/endpoint/devices">
+    Deploy applications, manage Intune-enrolled devices, and configure Autopilot profiles across tenants.
+  </Card>
+  <Card title="Security center" icon="shield" href="/security/overview">
+    Monitor Microsoft Defender alerts and incidents, track Secure Score, and manage risky sign-ins.
+  </Card>
+  <Card title="Conditional access" icon="lock" href="/tenant/conditional-access">
+    Deploy and audit Conditional Access policies from templates across your entire customer base.
+  </Card>
+</CardGroup>
+
+## Who CIPP is for
+
+CIPP is designed for **Microsoft Partners** — primarily Managed Service Providers (MSPs) and IT service providers who manage Microsoft 365 environments on behalf of multiple customer organizations. If you hold a GDAP or legacy Delegated Admin relationship with your customers, CIPP gives you a unified control plane for those tenants.
+
+CIPP also supports **direct tenant mode** for organizations that want to manage a single Microsoft 365 environment without a partner relationship.
+
+## Open-source and self-hosted
+
+CIPP is licensed under the [AGPL-3.0 license](https://github.com/KelvinTegelaar/CIPP/blob/main/LICENSE) and is free to self-host. You deploy it into your own Azure subscription, so your credentials and customer data never leave your environment.
+
+<Note>
+  The source code is available at [https://github.com/KelvinTegelaar/CIPP](https://github.com/KelvinTegelaar/CIPP). Contributions are welcome — see the [contributing guide](/dev/contributing) before opening a pull request.
+</Note>
+
+The project is maintained by [CyberDrain](https://cyberdrain.com) and a community of contributors. Copyright of all contributions is assigned to CyberDrain under the project's Contributor License Agreement.
+
+## Get started
+
+<Steps>
+  <Step title="Deploy to Azure">
+    Use the Azure Resource Manager template in the repository to provision the CIPP backend (Azure Functions) and frontend (Azure Static Web App) into your Azure tenant. See [Deploy CIPP to Azure](/setup/deployment).
+  </Step>
+  <Step title="Run the setup wizard">
+    Open the setup wizard to create the SAM application registration, authenticate with your partner tenant, and connect your first customer tenants. See [Onboard tenants with the CIPP setup wizard](/setup/onboarding).
+  </Step>
+  <Step title="Check permissions">
+    Verify that your application registration has the correct Microsoft Graph permissions and that your GDAP relationships include the required Azure AD roles. See [CIPP roles and permissions](/setup/permissions).
+  </Step>
+</Steps>

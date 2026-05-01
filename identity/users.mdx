@@ -1,0 +1,161 @@
+---
+title: "Manage Microsoft 365 users across all your tenants"
+description: "Create, edit, disable, and reset user accounts in any tenant. Handle JIT admin, vacation mode, risky users, and deleted items from one CIPP interface."
+---
+
+CIPP gives you a single interface to manage users across every Microsoft 365 tenant in your portfolio. From the Users list you can provision new accounts, update profile properties in bulk, reset passwords, block sign-ins, and kick off more advanced workflows like Just-in-Time admin access, vacation scheduling, and risky user remediation — all without switching between tenant admin portals.
+
+<CardGroup cols={2}>
+  <Card title="Users list" icon="users" href="/identity/users">
+    View, filter, and act on all users in the selected tenant. Switch tenants at any time using the tenant selector.
+  </Card>
+  <Card title="Add & bulk-add users" icon="user-plus" href="/identity/users">
+    Create a single user or import multiple users at once. Invite guest users individually or in bulk via CSV.
+  </Card>
+  <Card title="Edit users" icon="pencil" href="/identity/users">
+    Update any profile field — display name, job title, department, phone numbers, usage location, and more.
+  </Card>
+  <Card title="Bulk property update wizard" icon="wand-magic-sparkles" href="/identity/users">
+    Select multiple users and patch their properties in a guided three-step wizard. Supports custom data attributes defined in your tenant.
+  </Card>
+  <Card title="Just-in-Time admin" icon="shield-halved" href="/identity/users">
+    Grant temporary elevated access with automatic expiration. Assign Azure AD roles or group membership for a defined window.
+  </Card>
+  <Card title="Vacation mode" icon="calendar-check" href="/identity/users">
+    Schedule automatic CA policy exclusions, mailbox delegation, mail forwarding, and out-of-office replies tied to a user's leave dates.
+  </Card>
+  <Card title="Risky users" icon="triangle-exclamation" href="/identity/users">
+    Review users flagged by Microsoft Identity Protection. Dismiss risk or open a Business Email Compromise investigation.
+  </Card>
+  <Card title="Deleted items" icon="trash-arrow-up" href="/identity/users">
+    Restore soft-deleted users, groups, and other directory objects or permanently remove them.
+  </Card>
+</CardGroup>
+
+## Viewing and filtering users
+
+Navigate to **Identity > Administration > Users** and select a tenant. The table loads up to 999 users sorted by display name and shows account status, UPN, email, phone, proxy addresses, and license assignment.
+
+Use the quick-filter buttons at the top of the table to narrow results:
+
+- **Account Enabled** — licensed, active accounts
+- **Account Disabled** — blocked sign-in accounts
+- **Guest Accounts** — external B2B users
+
+Click any row to open the side panel with full profile details including on-premises sync information, alternate email addresses, and license assignment states.
+
+## Creating users
+
+Click **Add User** to open the new-user drawer for the currently selected tenant. You can pre-populate the form by copying properties from an existing user — select any user in the table, choose **Copy User Properties**, and the drawer opens pre-filled with that user's settings.
+
+To create multiple users at once, click **Bulk Add Users** and upload a CSV file with the required columns. For external collaborators, use **Invite Guest** or **Bulk Invite Guest** to send B2B invitation emails.
+
+<Note>
+The `Identity.User.ReadWrite` permission is required to create and modify users. See [permissions](/setup/permissions) for details on granting CIPP the correct access.
+</Note>
+
+## Editing users
+
+To edit a single user's profile, open the side panel and choose **Edit User**, or select **Edit** from the row action menu. The edit form covers all core profile fields.
+
+### Bulk property update
+
+When you need to apply the same field value to many users simultaneously, select two or more users in the table, then choose **Update Users** from the bulk-action menu. This opens the three-step **Update Users Wizard**:
+
+<Steps>
+  <Step title="Review users">
+    Confirm the list of selected users. Remove any you want to exclude before continuing.
+  </Step>
+  <Step title="Select properties">
+    Choose one or more properties to update from the full list of patchable fields: city, company name, country, department, employee type, job title, office location, postal code, preferred data location, preferred language, show in address list, state/province, street address, usage location, and any custom data attributes configured for the tenant.
+  </Step>
+  <Step title="Confirm and submit">
+    Review the property values and the affected users, then click **Submit** to apply the changes across all selected users.
+  </Step>
+</Steps>
+
+## Just-in-Time (JIT) admin
+
+JIT admin lets you grant temporary elevated access to a user — either a new account created specifically for the purpose or an existing user — for a defined period. CIPP automatically removes the access when the window expires.
+
+Navigate to **Identity > Administration > JIT Admin** and click **Add JIT Admin**.
+
+<Steps>
+  <Step title="Select tenant and template">
+    Choose the target tenant. If you have saved JIT Admin Templates, CIPP automatically selects the default template for the tenant. Templates can pre-fill roles, expiration actions, notification settings, and reasons.
+  </Step>
+  <Step title="Choose the user">
+    Select **New User** to create a dedicated admin account, or **Existing User** to elevate an existing account. For new users, provide first name, last name, username, and domain.
+  </Step>
+  <Step title="Set the access window">
+    Define the start and end dates. If the selected template includes a default duration, the end date is calculated automatically when you adjust the start date.
+  </Step>
+  <Step title="Configure permissions">
+    Toggle **Admin Roles** to assign Azure AD directory roles, **Group Membership** to add the user to specific groups, or both. You must enable at least one.
+  </Step>
+  <Step title="Set expiration action and notifications">
+    Choose what happens when the window expires: **Delete User**, **Disable User**, **Remove Roles**, **Remove Groups**, or **Remove Roles and Groups**. Optionally trigger a webhook, email, or PSA notification. Provide a reason, which is stored for audit purposes.
+  </Step>
+</Steps>
+
+<Tip>
+Enable **Generate TAP** to create a Temporary Access Pass for the JIT admin account. Confirm that Temporary Access Pass is enabled in the tenant's authentication methods policy before using this option.
+</Tip>
+
+The JIT Admins table shows active and expired entries. Filter by **Active JIT Admins** to see only current elevated accounts.
+
+## Vacation mode
+
+Vacation mode schedules a set of time-bounded actions tied to a user's leave period. Navigate to **Identity > Administration > Vacation Mode** and click **Add Vacation Schedule** to configure:
+
+- **Conditional Access policy exclusion** — temporarily adds the user to an exclusion group named `Vacation Exclusion - <Policy Name>`. The group is removed at the end date.
+- **Mailbox permissions** — grants delegates Full Access, Send As, or Send On Behalf (with optional calendar permissions) for the duration. Permissions are automatically removed when the vacation ends.
+- **Mail forwarding** — enables forwarding to an internal user, contact, or external address at the start date and disables it at the end date.
+- **Out of office** — sets internal and external auto-reply messages, optionally blocks the calendar, declines new invitations, and cancels existing meetings.
+
+<Warning>
+Existing forwarding settings are **not** restored after vacation mode ends. Make a note of any pre-existing forwarding configuration before enabling vacation mode forwarding.
+</Warning>
+
+Use the **Cancel Vacation Mode** action on any scheduled entry to remove the tasks before they run.
+
+## Risky users
+
+Navigate to **Identity > Administration > Risky Users** to see users flagged by Microsoft Entra ID Protection. The table shows risk level, risk state, risk detail, and last updated timestamp. Quick filters let you view users **at risk**, **dismissed**, or **remediated**.
+
+From the row action menu you can:
+
+- **Dismiss Risk** — marks the user's risk as dismissed in Identity Protection.
+- **Research Compromised Account** — opens the Business Email Compromise investigation page for a deep-dive into the user's activity.
+
+<Note>
+Risky user data is sourced from the `identityProtection/riskyUsers` Microsoft Graph endpoint and requires an Entra ID P2 licence in the target tenant.
+</Note>
+
+## Deleted items
+
+Navigate to **Identity > Administration > Deleted Items** to see soft-deleted users, groups, and other directory objects still within their 30-day recovery window. From the table you can:
+
+- **Restore Object** — recovers the object and re-enables it in the tenant.
+- **Permanently Delete Object** — removes the object immediately and irreversibly.
+
+<Warning>
+Permanent deletion cannot be undone. Confirm with the customer before using this action.
+</Warning>
+
+## Related pages
+
+<CardGroup cols={2}>
+  <Card title="Offboarding wizard" icon="person-walking-arrow-right" href="/identity/offboarding">
+    Run a structured offboarding process to revoke access, remove licences, and optionally delete a departing user.
+  </Card>
+  <Card title="Groups and roles" icon="users-gear" href="/identity/groups-roles">
+    Manage Microsoft 365 groups, security groups, distribution lists, and Azure AD role assignments.
+  </Card>
+  <Card title="Identity reports" icon="chart-bar" href="/identity/reports">
+    Review MFA status, sign-in logs, inactive users, and risk detection data across your tenants.
+  </Card>
+  <Card title="Permissions" icon="key" href="/setup/permissions">
+    Configure the CIPP service account permissions required for user management actions.
+  </Card>
+</CardGroup>

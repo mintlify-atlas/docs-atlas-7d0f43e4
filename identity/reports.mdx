@@ -1,0 +1,171 @@
+---
+title: "Identity Reports: MFA, Sign-Ins, and Risk Detections"
+description: "Run MFA status, sign-in logs, inactive user, Azure AD Connect, and risk detection reports across Microsoft 365 tenants with export to CSV or PDF."
+---
+
+CIPP's identity reports give you visibility into the authentication health and activity across your managed tenants. You can check MFA coverage, investigate sign-in logs, identify accounts that have not been active for six months or more, validate on-premises directory sync health, and review identity risk detections — all from a single interface with export capabilities.
+
+<CardGroup cols={2}>
+  <Card title="MFA report" icon="lock" href="/identity/reports">
+    Shows MFA registration status, per-user MFA state, Conditional Access coverage, and registered methods for every user in a tenant.
+  </Card>
+  <Card title="Sign-in report" icon="arrow-right-to-bracket" href="/identity/reports">
+    Queries Azure AD sign-in logs with flexible filters for time range, sign-in type, error codes, application, and CA policy result.
+  </Card>
+  <Card title="Inactive users report" icon="user-slash" href="/identity/reports">
+    Lists accounts with no interactive or non-interactive sign-in activity in the last six months, with last sign-in dates and licence count.
+  </Card>
+  <Card title="Azure AD Connect report" icon="server" href="/identity/reports">
+    Shows directory objects that are currently in an error state in the on-premises sync engine.
+  </Card>
+  <Card title="Risk detections" icon="triangle-exclamation" href="/identity/reports">
+    Displays individual risk events detected by Microsoft Entra ID Protection, including detection type, timing, IP address, and location.
+  </Card>
+</CardGroup>
+
+## MFA report
+
+Navigate to **Identity > Reports > MFA Report**. The report is sourced from a cached data set (refreshed on demand) and covers every user in the tenant.
+
+Columns include:
+
+| Column | Description |
+|---|---|
+| UPN | User principal name |
+| AccountEnabled | Whether the account is active |
+| isLicensed | Whether the user holds at least one licence |
+| MFARegistration | Whether the user has registered at least one MFA method |
+| PerUser | Per-user MFA state (Enforced / Enabled / Disabled) |
+| CoveredBySD | Whether Security Defaults are covering this user |
+| CoveredByCA | Whether a Conditional Access policy enforces MFA |
+| MFAMethods | Registered authentication methods |
+| CAPolicies | CA policies applied to the user |
+| IsAdmin | Whether the user holds a directory role |
+| UserType | Member or Guest |
+
+**Quick filters** available in the table:
+
+- Enabled, licensed users
+- Enabled, licensed users missing MFA
+- No MFA methods registered
+- MFA methods registered
+- Admin users
+
+### Setting per-user MFA
+
+Select one or more users and choose **Set Per-User MFA** from the action menu. Set the state to **Enforced**, **Enabled**, or **Disabled** and confirm.
+
+<Note>
+Per-user MFA is a legacy enforcement mechanism. Where possible, enforce MFA through Conditional Access policies or Security Defaults instead. Use this action for edge cases where CA-based enforcement is not available.
+</Note>
+
+### Refreshing the MFA cache
+
+Click **Sync MFA Report** to trigger a fresh pull of MFA data from all tenants. The cache timestamp is shown in the report controls. Use this when you have recently changed MFA settings and want the report to reflect the current state.
+
+## Sign-in report
+
+Navigate to **Identity > Reports > Sign Ins Report**. This report queries the `auditLogs/signIns` endpoint in real time using your configured filter. No data is cached — every query hits the Microsoft Graph API directly.
+
+### Configuring filters
+
+Expand the **Filter Options** panel and set:
+
+- **Days** — number of days back to include (default: 7).
+- **Results per page** — maximum number of results returned per query (default: 500). Reduce this if the report is loading slowly.
+- **Sign-in event type** — Interactive, Non-Interactive, Service Principal, or Managed Identity (default: Interactive only).
+- **User** — filter by UPN prefix.
+- **App** — filter by application display name prefix.
+- **Conditional Access result** — filter by CA outcome: Success, Failure, or Not Applied.
+- **Error codes** — filter by one or more specific sign-in error codes. Descriptions are shown alongside each code.
+- **Hide Directory Sync Account** — excludes the on-premises directory synchronisation service account from results (enabled by default).
+
+Click **Apply Filter** to run the query. The table columns adjust automatically based on the event types selected — user sign-in columns differ from service principal columns.
+
+### Saving filter presets
+
+Click **Save as Preset** to store the current filter configuration as a named preset in the Graph Explorer. Presets use a dynamic date placeholder so the date range stays current when the preset is loaded later. Saved presets are available from the [Graph Explorer](#) in CIPP settings.
+
+### Examining individual sign-ins
+
+Click any row to open the side panel, which shows the complete sign-in record as a JSON tree. This includes device details, applied CA policies, authentication details, and location data.
+
+<Tip>
+Filter by `errorCode eq 0` to see successful sign-ins, or filter for common failure codes such as `50126` (invalid credentials) or `53003` (CA policy blocked) to investigate authentication issues.
+</Tip>
+
+## Inactive users report
+
+Navigate to **Identity > Reports > Inactive Users Report**. This report uses a cached data set and identifies accounts with no interactive or non-interactive sign-in activity in the last six months.
+
+Columns include last sign-in date, last non-interactive sign-in date, number of assigned licences, and the number of days since the last sign-in.
+
+From the report you can act directly on any inactive account:
+
+- **View User** — open the full user profile page.
+- **Edit User** — update user properties.
+- **Block Sign In** — disable authentication without deleting the account.
+- **Delete User** — permanently remove the account.
+
+<Warning>
+Before blocking or deleting an inactive account, verify the account is not a service account or shared mailbox delegate. Service accounts may not generate interactive sign-in events even when actively used.
+</Warning>
+
+### Refreshing the user cache
+
+Click **Sync User Cache** to pull the latest data from all tenants. The `lastRefreshedDateTime` column shows when each tenant's data was last updated.
+
+## Azure AD Connect report
+
+Navigate to **Identity > Reports > Azure AD Connect Report**. This report shows directory objects in the selected tenant that are currently in an error state in the on-premises sync engine.
+
+Columns include the object display name, object type, creation date, and the provisioning error message from the sync engine. Use this report to identify and remediate sync conflicts, attribute validation failures, and duplicate object errors before they affect user access.
+
+<Note>
+The Azure AD Connect report only covers tenants using Entra Connect (formerly Azure AD Connect) for on-premises synchronisation. Cloud-only tenants will show an empty table.
+</Note>
+
+## Risk detections
+
+Navigate to **Identity > Reports > Risk Detection Report**. This report surfaces individual risk events from the `identityProtection/riskDetections` endpoint, ordered by most recent detection.
+
+Columns include detection date, UPN, location, IP address, risk state, risk detail, risk level, risk event type, detection timing type, and activity type. Quick filters let you focus on:
+
+- **Users at Risk** — active, unresolved risk events
+- **Confirmed Compromised** — events confirmed as genuine compromises
+- **Confirmed Safe** — events dismissed as false positives
+- **Remediated** — resolved events
+
+From any row you can select **Research Compromised Account** to open the Business Email Compromise investigation page for a deeper look at the user's recent activity.
+
+<Note>
+Risk detection data requires an Entra ID P2 licence in the target tenant. Tenants without P2 will return an empty data set.
+</Note>
+
+## Exporting report data
+
+Every report table in CIPP includes an **Export** button in the table toolbar. You can export the current view (with any active filters applied) to:
+
+- **CSV** — for analysis in Excel or other tools.
+- **PDF** — for sharing with customers or storing as a point-in-time record.
+
+<Tip>
+Apply the relevant quick filter before exporting to produce a focused report — for example, export only "Enabled, licensed users missing MFA" for a customer remediation list.
+</Tip>
+
+## Related pages
+
+<CardGroup cols={2}>
+  <Card title="User management" icon="users" href="/identity/users">
+    Take action on users identified in reports — disable sign-in, reset passwords, or start offboarding.
+  </Card>
+  <Card title="Security overview" icon="shield" href="/security/overview">
+    Correlate identity risk data with broader security alerts and Defender incidents.
+  </Card>
+  <Card title="Tenant standards" icon="shield-check" href="/tenant/standards-baselines">
+    Enforce MFA and other authentication standards automatically across your tenants.
+  </Card>
+  <Card title="Notifications and SIEM" icon="bell" href="/settings/notifications-siem">
+    Forward report data and alerts to your SIEM or notification channels.
+  </Card>
+</CardGroup>

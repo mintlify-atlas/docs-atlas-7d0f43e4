@@ -1,0 +1,86 @@
+---
+title: "CIPP roles and permissions for Microsoft 365 access"
+description: "How CIPP's Azure AD application permissions work, what the permissions page checks, and how to repair missing Graph or GDAP role assignments."
+---
+
+CIPP accesses Microsoft 365 through an Azure AD application registration — the SAM (Secure Application Model) app — using delegated permissions backed by a refresh token from your CIPP service account. This means that the scopes CIPP can exercise are the intersection of what the application is granted and what the service account is permitted to do. The **Settings > Permissions** page in CIPP lets you inspect and repair all three layers: application permissions, GDAP role assignments, and per-tenant connectivity.
+
+## How CIPP's permission model works
+
+When CIPP calls Microsoft Graph or other Microsoft APIs, it does so under the identity of the SAM application registration combined with the CIPP service account's delegated context. The credentials — application ID, client secret, and refresh token — are stored in the Azure Key Vault that was deployed alongside CIPP.
+
+There are three distinct permission layers:
+
+1. **Microsoft Graph application permissions** — the API permission scopes granted to the SAM app registration in your partner tenant's Azure AD. These must cover everything CIPP needs to do across tenants.
+2. **GDAP role assignments** — the Azure AD directory roles included in each GDAP relationship with a customer tenant. These control what the service account can actually do inside that tenant.
+3. **Tenant connectivity** — whether CIPP can successfully acquire a token for and communicate with each enrolled tenant.
+
+## The permissions page
+
+Navigate to **Settings > Permissions** to access the three-panel permission dashboard. All three checks can be run together by importing a permission report, or individually.
+
+### Application permissions check
+
+The **Permissions** panel checks whether the SAM application registration has all the Microsoft Graph scopes that CIPP requires. If any permissions are missing, CIPP displays which scopes are absent and provides a repair action that re-consents the application with the full required scope set.
+
+<Note>
+  Re-consenting the application requires the CIPP service account to authenticate again through the wizard. The consent prompt will ask for all required permissions in a single flow.
+</Note>
+
+### GDAP roles check
+
+The **GDAP** panel checks whether each GDAP relationship has the Azure AD roles that CIPP needs assigned to the correct security groups. CIPP's default GDAP template ("CIPP Defaults") defines the minimum role set. If roles are missing from a relationship, you can use the repair action to add them without re-inviting the customer.
+
+The roles required for full CIPP functionality in a GDAP relationship include, at minimum:
+
+- Directory Readers
+- User Administrator
+- Exchange Administrator
+- SharePoint Administrator
+- Security Reader
+- Cloud Device Administrator
+- Intune Administrator
+
+<Warning>
+  Not all GDAP roles are available in every Microsoft license tier. If a customer tenant does not have a license that includes a given service (for example, Intune), the corresponding role will not be assignable. CIPP will still function for the services that are available.
+</Warning>
+
+### Tenant connectivity check
+
+The **Tenants** panel attempts to authenticate to each enrolled tenant and reports which tenants are reachable and which are failing. A failed tenant typically indicates an expired or revoked token, a GDAP relationship that was terminated, or a tenant that has been removed from Partner Center.
+
+For failed tenants, you can either re-run the setup wizard with **Refresh Tokens** to replace the stored credentials, or re-add the tenant through **Add a tenant** if the relationship itself has changed.
+
+## Importing and exporting permission reports
+
+The permissions page supports importing a previously exported permission report. This is useful when:
+
+- You want to compare the permission state before and after a repair operation
+- You are troubleshooting a specific tenant's access issues
+- Support requires a snapshot of your current permission state
+
+Click **Import Report** at the top of the Permissions page to load a previously saved report. Click **Export** to save the current state to a JSON file.
+
+## Role management for CIPP users
+
+CIPP itself uses Azure Static Web App role-based access control to manage which users can log in and what they can do. User roles are managed through the **Static Web App Role Management** link in **Settings > Backend**. You can invite team members to CIPP and assign them roles (for example, read-only analyst versus full administrator) without giving them direct Azure Portal access.
+
+<Tip>
+  Use the PowerShell snippet available in **Settings > Backend > Cloud Shell** to list all current CIPP users and their roles:
+
+  ```powershell
+  Get-AzStaticWebAppUser -ResourceGroupName <rg-name> -Name <swa-name> -AuthProvider all |
+    Select-Object DisplayName, Role
+  ```
+</Tip>
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="Backend settings" icon="server" href="/settings/backend-permissions">
+    Manage Function App configuration, deployment history, and Key Vault access.
+  </Card>
+  <Card title="GDAP management" icon="shield-halved" href="/tenant/gdap-management">
+    Create and manage GDAP relationships and role templates across your customer base.
+  </Card>
+</CardGroup>
